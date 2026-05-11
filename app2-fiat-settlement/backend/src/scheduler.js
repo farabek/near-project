@@ -13,12 +13,16 @@ function startScheduler(db, config) {
 
 function registerSchedule(db, config, schedule) {
   if (activeTasks.has(schedule.id)) return;
+  if (!cron.validate(schedule.cron_expr)) {
+    console.error(`Invalid cron expression for schedule ${schedule.id}: "${schedule.cron_expr}"`);
+    return;
+  }
 
   const task = cron.schedule(schedule.cron_expr, async () => {
     try {
       await runScheduledPayment(db, config, schedule);
     } catch (err) {
-      console.error(`Scheduler error for schedule ${schedule.id}:`, err.message);
+      console.error(`Scheduler error for schedule ${schedule.id}:`, err);
     }
   });
 
@@ -34,13 +38,13 @@ function unregisterSchedule(id) {
 }
 
 async function runScheduledPayment(db, config, schedule) {
+  await mockSendPayment({ amount: schedule.amount, currency: schedule.currency });
+
   const payment = createPayment(db, {
     school_id: schedule.school_id,
     amount: schedule.amount,
     currency: schedule.currency,
   });
-
-  await mockSendPayment({ amount: schedule.amount, currency: schedule.currency });
 
   confirmPayment(db, payment.id, { app1_released: false });
   return payment;
