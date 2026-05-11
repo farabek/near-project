@@ -37,6 +37,13 @@ function unregisterSchedule(id) {
   }
 }
 
+function stopAllSchedules() {
+  for (const [id, task] of activeTasks) {
+    task.stop();
+    activeTasks.delete(id);
+  }
+}
+
 async function runScheduledPayment(db, config, schedule) {
   await mockSendPayment({ amount: schedule.amount, currency: schedule.currency });
 
@@ -50,4 +57,4 @@ async function runScheduledPayment(db, config, schedule) {
   return payment;
 }
 
-module.exports = { startScheduler, registerSchedule, unregisterSchedule, runScheduledPayment };
+module.exports = { startScheduler, registerSchedule, unregisterSchedule, stopAllSchedules, runScheduledPayment };

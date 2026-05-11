@@ -1,0 +1,164 @@
+const express = require('express');
+const path = require('path');
+const { config, validateConfig } = require('./config');
+const {
+  initDb,
+  addSchool, getSchool, getAllSchools, updateSchool, deleteSchool,
+  createPayment, getPayment, getAllPayments, confirmPayment,
+  createSchedule, getSchedule, getAllSchedules, toggleSchedule, deleteSchedule,
+} = require('./db');
+const { mockSendPayment, releaseApp1 } = require('./payment');
+const { startScheduler, registerSchedule, unregisterSchedule, stopAllSchedules } = require('./scheduler');
+
+const app = express();
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
+
+let db;
+
+function initApp(dbPath) {
+  db = initDb(dbPath || config.dbPath);
+  return app;
+}
+
+function closeDb() {
+  stopAllSchedules();
+  if (db) {
+    db.close();
+    db = null;
+  }
+}
+
+// ─── Schools ──────────────────────────────────────────────────────────────────
+
+app.get('/api/schools', (req, res) => {
+  res.json(getAllSchools(db));
+});
+
+app.post('/api/schools', (req, res) => {
+  const { name, bank_details, currency } = req.body;
+  if (!name) return res.status(400).json({ error: 'name is required' });
+  try {
+    res.status(201).json(addSchool(db, { name, bank_details, currency }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/schools/:id', (req, res) => {
+  const school = getSchool(db, req.params.id);
+  if (!school) return res.status(404).json({ error: 'School not found' });
+  try {
+    res.json(updateSchool(db, req.params.id, req.body));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/schools/:id', (req, res) => {
+  const school = getSchool(db, req.params.id);
+  if (!school) return res.status(404).json({ error: 'School not found' });
+  try {
+    deleteSchool(db, req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+app.get('/api/payments', (req, res) => {
+  res.json(getAllPayments(db));
+});
+
+app.post('/api/payments', (req, res) => {
+  const { school_id, app1_payment_id, amount, currency, notes } = req.body;
+  if (!school_id || amount == null) {
+    return res.status(400).json({ error: 'school_id and amount are required' });
+  }
+  const school = getSchool(db, school_id);
+  if (!school) return res.status(404).json({ error: 'School not found' });
+  res.status(201).json(createPayment(db, { school_id, app1_payment_id, amount, currency, notes }));
+});
+
+app.post('/api/payments/:id/confirm', async (req, res) => {
+  const payment = getPayment(db, req.params.id);
+  if (!payment) return res.status(404).json({ error: 'Payment not found' });
+  if (payment.status === 'sent') return res.status(400).json({ error: 'Payment already sent' });
+
+  try {
+    const school = getSchool(db, payment.school_id);
+    await mockSendPayment({ school, amount: payment.amount, currency: payment.currency });
+
+    let app1Released = false;
+    let warning = null;
+
+    if (payment.app1_payment_id) {
+      try {
+        await releaseApp1(config.app1Url, config.app1ApiKey, payment.app1_payment_id);
+        app1Released = true;
+      } catch (err) {
+        warning = `App 1 release failed: ${err.message}`;
+      }
+    }
+
+    const updated = confirmPayment(db, payment.id, { app1_released: app1Released });
+    const response = { success: true, payment: updated };
+    if (warning) response.warning = warning;
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Schedules ────────────────────────────────────────────────────────────────
+
+app.get('/api/schedules', (req, res) => {
+  res.json(getAllSchedules(db));
+});
+
+app.post('/api/schedules', (req, res) => {
+  const { school_id, amount, currency, cron_expr } = req.body;
+  if (!school_id || amount == null || !cron_expr) {
+    return res.status(400).json({ error: 'school_id, amount, and cron_expr are required' });
+  }
+  const school = getSchool(db, school_id);
+  if (!school) return res.status(404).json({ error: 'School not found' });
+  const schedule = createSchedule(db, { school_id, amount, currency, cron_expr });
+  registerSchedule(db, config, schedule);
+  res.status(201).json(schedule);
+});
+
+app.patch('/api/schedules/:id', (req, res) => {
+  const schedule = getSchedule(db, req.params.id);
+  if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
+  const { active } = req.body;
+  if (active === undefined) return res.status(400).json({ error: 'active is required' });
+  if (!active) unregisterSchedule(schedule.id);
+  else registerSchedule(db, config, schedule);
+  res.json(toggleSchedule(db, req.params.id, active));
+});
+
+app.delete('/api/schedules/:id', (req, res) => {
+  const schedule = getSchedule(db, req.params.id);
+  if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
+  unregisterSchedule(schedule.id);
+  deleteSchedule(db, req.params.id);
+  res.json({ success: true });
+});
+
+if (require.main === module) {
+  validateConfig();
+  initApp();
+  startScheduler(db, config);
+  app.listen(config.port, () => {
+    console.log(`App 2 Fiat Settlement running on port ${config.port}`);
+    console.log(`  App 1 URL: ${config.app1Url}`);
+    console.log(`  DB:        ${config.dbPath}`);
+  });
+}
+
+app.initApp = initApp;
+app.closeDb = closeDb;
+module.exports = app;
