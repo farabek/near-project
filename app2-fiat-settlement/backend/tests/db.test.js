@@ -37,6 +37,12 @@ describe('schools', () => {
     dbModule.createPayment(db, { school_id: school.id, amount: 100, currency: 'USD' });
     expect(() => dbModule.deleteSchool(db, school.id)).toThrow('School has existing payments');
   });
+
+  test('deleteSchool throws if school has schedules', () => {
+    const school = dbModule.addSchool(db, { name: 'School', currency: 'USD' });
+    dbModule.createSchedule(db, { school_id: school.id, amount: 100, currency: 'USD', cron_expr: '0 9 1 * *' });
+    expect(() => dbModule.deleteSchool(db, school.id)).toThrow('School has existing schedules');
+  });
 });
 
 describe('payments', () => {
@@ -58,6 +64,10 @@ describe('payments', () => {
     expect(confirmed.status).toBe('sent');
     expect(confirmed.app1_released).toBe(1);
     expect(confirmed.sent_at).toBeTruthy();
+  });
+
+  test('confirmPayment throws if payment not found', () => {
+    expect(() => dbModule.confirmPayment(db, 9999, { app1_released: false })).toThrow('Payment not found');
   });
 });
 

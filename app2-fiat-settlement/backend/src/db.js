@@ -7,6 +7,7 @@ function initDb(dbPath) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   const db = new Database(dbPath);
+  db.pragma('foreign_keys = ON');
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS schools (
@@ -62,6 +63,7 @@ function getAllSchools(db) {
 }
 
 function updateSchool(db, id, { name, bank_details, currency }) {
+  if (!getSchool(db, id)) throw new Error('School not found');
   db.prepare(`
     UPDATE schools
     SET name = COALESCE(?, name),
@@ -73,8 +75,10 @@ function updateSchool(db, id, { name, bank_details, currency }) {
 }
 
 function deleteSchool(db, id) {
-  const count = db.prepare('SELECT COUNT(*) as c FROM payments WHERE school_id = ?').get(id).c;
-  if (count > 0) throw new Error('School has existing payments');
+  const paymentCount = db.prepare('SELECT COUNT(*) as c FROM payments WHERE school_id = ?').get(id).c;
+  if (paymentCount > 0) throw new Error('School has existing payments');
+  const scheduleCount = db.prepare('SELECT COUNT(*) as c FROM schedules WHERE school_id = ?').get(id).c;
+  if (scheduleCount > 0) throw new Error('School has existing schedules');
   db.prepare('DELETE FROM schools WHERE id = ?').run(id);
 }
 
@@ -96,6 +100,7 @@ function getAllPayments(db) {
 }
 
 function confirmPayment(db, id, { app1_released }) {
+  if (!getPayment(db, id)) throw new Error('Payment not found');
   db.prepare(`
     UPDATE payments
     SET status = 'sent', sent_at = datetime('now'), app1_released = ?
