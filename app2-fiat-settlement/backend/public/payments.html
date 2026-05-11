@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>App 2 — Выплаты</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; }
+    nav { background: #1e40af; color: white; padding: 14px 24px; display: flex; gap: 24px; align-items: center; }
+    nav a { color: white; text-decoration: none; font-size: 14px; opacity: 0.8; }
+    nav a:hover, nav a.active { opacity: 1; font-weight: 600; }
+    nav .brand { font-weight: 700; font-size: 16px; margin-right: 16px; opacity: 1; }
+    .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+    h1 { font-size: 22px; margin-bottom: 24px; }
+    .layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .badge { padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge.sent { background: #dcfce7; color: #16a34a; }
+    .badge.pending { background: #dbeafe; color: #1d4ed8; }
+    .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 16px; margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; margin-top: 12px; }
+    input, select, textarea { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+    .row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+    .btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-primary { background: #1e40af; color: white; margin-top: 16px; width: 100%; }
+    .btn-confirm { background: #16a34a; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: none; font-size: 12px; }
+    .error { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 10px 14px; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+    .success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; padding: 10px 14px; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+    .warn { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 10px 14px; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+    .hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">💰 Edu-Arbitrage</span>
+    <a href="/">Дашборд</a>
+    <a href="/schools.html">Школы</a>
+    <a href="/payments.html" class="active">Выплаты</a>
+    <a href="/schedules.html">Расписания</a>
+  </nav>
+  <div class="container">
+    <h1>Выплаты</h1>
+    <div class="layout">
+      <table>
+        <thead><tr><th>Школа</th><th>Сумма</th><th>App 1 ID</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="paymentsTable"><tr><td colspan="6">Загрузка...</td></tr></tbody>
+      </table>
+      <div class="card">
+        <h2>Новая выплата</h2>
+        <label>Школа *</label>
+        <select id="school_id"></select>
+        <label>Сумма и валюта *</label>
+        <div class="row">
+          <input id="amount" type="number" placeholder="300" min="0.01" step="0.01" />
+          <select id="currency">
+            <option>USD</option><option>RUB</option><option>EUR</option><option>GBP</option><option>UZS</option>
+          </select>
+        </div>
+        <label>Payment ID из App 1</label>
+        <input id="app1_payment_id" placeholder="pay_001" />
+        <div class="hint">Необязательно. Если указан — App 1 разблокирует USDC при подтверждении.</div>
+        <label>Заметка</label>
+        <input id="notes" placeholder="За май 2026" />
+        <button class="btn btn-primary" onclick="createPayment()">Создать выплату</button>
+        <div class="error" id="error"></div>
+        <div class="success" id="success"></div>
+        <div class="warn" id="warn"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let schoolMap = {};
+
+    async function loadData() {
+      const [schools, payments] = await Promise.all([
+        fetch('/api/schools').then(r => r.json()),
+        fetch('/api/payments').then(r => r.json()),
+      ]);
+
+      schoolMap = {};
+      schools.forEach(s => { schoolMap[s.id] = s.name; });
+
+      const select = document.getElementById('school_id');
+      select.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+      const rows = payments.map(p => `
+        <tr>
+          <td>${schoolMap[p.school_id] || '—'}</td>
+          <td>${p.amount} ${p.currency}</td>
+          <td style="font-family:monospace;font-size:12px;color:#64748b">${p.app1_payment_id || '—'}</td>
+          <td><span class="badge ${p.status}">${p.status}</span></td>
+          <td>${p.created_at.slice(0, 10)}</td>
+          <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${p.id})">✓ Отправить</button>` : ''}</td>
+        </tr>
+      `).join('');
+      document.getElementById('paymentsTable').innerHTML = rows || '<tr><td colspan="6">Нет выплат</td></tr>';
+    }
+
+    async function createPayment() {
+      const school_id = document.getElementById('school_id').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const currency = document.getElementById('currency').value;
+      const app1_payment_id = document.getElementById('app1_payment_id').value.trim() || null;
+      const notes = document.getElementById('notes').value.trim() || null;
+      const errEl = document.getElementById('error');
+      const okEl = document.getElementById('success');
+      errEl.style.display = 'none'; okEl.style.display = 'none';
+
+      if (!school_id || !amount) { errEl.textContent = 'Выберите школу и введите сумму'; errEl.style.display = 'block'; return; }
+
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ school_id: parseInt(school_id), amount, currency, app1_payment_id, notes }),
+      });
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+
+      okEl.textContent = `Выплата создана (ID: ${data.id}). Нажмите "✓ Отправить" для подтверждения.`;
+      okEl.style.display = 'block';
+      document.getElementById('amount').value = '';
+      document.getElementById('app1_payment_id').value = '';
+      document.getElementById('notes').value = '';
+      loadData();
+    }
+
+    async function confirmPayment(id) {
+      const warnEl = document.getElementById('warn');
+      warnEl.style.display = 'none';
+      const res = await fetch(`/api/payments/${id}/confirm`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error); return; }
+      if (data.warning) { warnEl.textContent = data.warning; warnEl.style.display = 'block'; }
+      loadData();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
