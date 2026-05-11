@@ -1,6 +1,3 @@
-// Must set env before requiring module
-process.env.APP1_RELEASE_API_KEY = 'test-key';
-
 const http = require('http');
 const { mockSendPayment, releaseApp1 } = require('../src/payment');
 
