@@ -38,10 +38,10 @@ function unregisterSchedule(id) {
 }
 
 function stopAllSchedules() {
-  for (const [id, task] of activeTasks) {
+  for (const task of activeTasks.values()) {
     task.stop();
-    activeTasks.delete(id);
   }
+  activeTasks.clear();
 }
 
 async function runScheduledPayment(db, config, schedule) {

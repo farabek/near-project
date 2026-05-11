@@ -76,6 +76,22 @@ describe('POST /api/payments', () => {
       .send({ school_id: schoolId });
     expect(res.status).toBe(400);
   });
+
+  test('returns 400 when amount is a string', async () => {
+    const res = await request(app)
+      .post('/api/payments')
+      .send({ school_id: schoolId, amount: 'abc', currency: 'USD' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive number/i);
+  });
+
+  test('returns 400 when amount is negative', async () => {
+    const res = await request(app)
+      .post('/api/payments')
+      .send({ school_id: schoolId, amount: -50, currency: 'USD' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive number/i);
+  });
 });
 
 describe('POST /api/payments/:id/confirm', () => {
@@ -140,5 +156,21 @@ describe('Schedules API', () => {
     expect(res.status).toBe(201);
     expect(res.body.active).toBe(1);
     expect(res.body.cron_expr).toBe('0 9 1 * *');
+  });
+
+  test('returns 400 for invalid cron_expr', async () => {
+    const res = await request(app)
+      .post('/api/schedules')
+      .send({ school_id: schoolId, amount: 100, currency: 'USD', cron_expr: 'not-a-cron' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/invalid cron/i);
+  });
+
+  test('returns 400 when schedule amount is non-numeric', async () => {
+    const res = await request(app)
+      .post('/api/schedules')
+      .send({ school_id: schoolId, amount: 'abc', currency: 'USD', cron_expr: '0 9 1 * *' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive number/i);
   });
 });

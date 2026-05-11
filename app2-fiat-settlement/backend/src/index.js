@@ -74,12 +74,16 @@ app.get('/api/payments', (req, res) => {
 
 app.post('/api/payments', (req, res) => {
   const { school_id, app1_payment_id, amount, currency, notes } = req.body;
-  if (!school_id || amount == null) {
-    return res.status(400).json({ error: 'school_id and amount are required' });
+  if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0) {
+    return res.status(400).json({ error: 'school_id and amount (positive number) are required' });
   }
   const school = getSchool(db, school_id);
   if (!school) return res.status(404).json({ error: 'School not found' });
-  res.status(201).json(createPayment(db, { school_id, app1_payment_id, amount, currency, notes }));
+  try {
+    res.status(201).json(createPayment(db, { school_id, app1_payment_id, amount, currency, notes }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/payments/:id/confirm', async (req, res) => {
@@ -120,14 +124,21 @@ app.get('/api/schedules', (req, res) => {
 
 app.post('/api/schedules', (req, res) => {
   const { school_id, amount, currency, cron_expr } = req.body;
-  if (!school_id || amount == null || !cron_expr) {
-    return res.status(400).json({ error: 'school_id, amount, and cron_expr are required' });
+  if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0 || !cron_expr) {
+    return res.status(400).json({ error: 'school_id, amount (positive number), and cron_expr are required' });
+  }
+  if (!require('node-cron').validate(cron_expr)) {
+    return res.status(400).json({ error: 'Invalid cron expression' });
   }
   const school = getSchool(db, school_id);
   if (!school) return res.status(404).json({ error: 'School not found' });
-  const schedule = createSchedule(db, { school_id, amount, currency, cron_expr });
-  registerSchedule(db, config, schedule);
-  res.status(201).json(schedule);
+  try {
+    const schedule = createSchedule(db, { school_id, amount, currency, cron_expr });
+    registerSchedule(db, config, schedule);
+    res.status(201).json(schedule);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.patch('/api/schedules/:id', (req, res) => {
@@ -135,17 +146,25 @@ app.patch('/api/schedules/:id', (req, res) => {
   if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
   const { active } = req.body;
   if (active === undefined) return res.status(400).json({ error: 'active is required' });
-  if (!active) unregisterSchedule(schedule.id);
-  else registerSchedule(db, config, schedule);
-  res.json(toggleSchedule(db, req.params.id, active));
+  try {
+    if (!active) unregisterSchedule(schedule.id);
+    else registerSchedule(db, config, schedule);
+    res.json(toggleSchedule(db, req.params.id, active));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.delete('/api/schedules/:id', (req, res) => {
   const schedule = getSchedule(db, req.params.id);
   if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
-  unregisterSchedule(schedule.id);
-  deleteSchedule(db, req.params.id);
-  res.json({ success: true });
+  try {
+    unregisterSchedule(schedule.id);
+    deleteSchedule(db, req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 if (require.main === module) {
