@@ -27,6 +27,7 @@ Rust смарт-контракт
 ```
 
 **Логика:**
+
 - App 1 хранит USDC в эскроу на блокчейне
 - App 2 управляет выплатами школам в фиате (mock провайдер)
 - При подтверждении выплаты App 2 вызывает App 1 → USDC разблокируется
@@ -82,6 +83,7 @@ node src/index.js
 ## Переменные окружения
 
 **App 1** (`app1-crypto-treasury/backend/.env`):
+
 ```env
 NEAR_ACCOUNT_ID=farab.testnet
 NEAR_PRIVATE_KEY=ed25519:...
@@ -92,6 +94,7 @@ RELEASE_API_KEY=app2-secret-key-change-in-production
 ```
 
 **App 2** (`app2-fiat-settlement/.env`):
+
 ```env
 PORT=3001
 APP1_URL=http://localhost:3000
@@ -106,7 +109,7 @@ DB_PATH=./data/app2.db
 ### App 1 (порт 3000)
 
 | Метод | Эндпоинт | Описание |
-|-------|----------|----------|
+| ------- | ---------- | ---------- |
 | `GET` | `/api/balance` | NEAR + USDC баланс |
 | `POST` | `/api/lock` | Заблокировать USDC `{ paymentId, amountUsdc }` |
 | `POST` | `/api/release` | Разблокировать `{ paymentId }` + `x-api-key` |
@@ -117,7 +120,7 @@ DB_PATH=./data/app2.db
 ### App 2 (порт 3001)
 
 | Метод | Эндпоинт | Описание |
-|-------|----------|----------|
+| ------- | ---------- | ---------- |
 | `GET/POST` | `/api/schools` | Список / добавить школу |
 | `PUT/DELETE` | `/api/schools/:id` | Обновить / удалить |
 | `GET/POST` | `/api/payments` | История / создать выплату |
@@ -144,7 +147,7 @@ cd app2-fiat-settlement/backend && npx jest --no-coverage
 ## Стек
 
 | | App 1 | App 2 |
-|--|-------|-------|
+| -- | ------- | ------- |
 | **Бэкенд** | Node.js, Express 4 | Node.js, Express 4 |
 | **БД** | NEAR blockchain | SQLite (better-sqlite3) |
 | **Контракт** | Rust, near-sdk 5.5.0 | — |
