@@ -39,6 +39,11 @@ impl EscrowContract {
     }
 
     pub fn lock_funds(&mut self, payment_id: String, amount_usdc: u128) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.owner,
+            "Only owner can lock funds"
+        );
         assert!(amount_usdc > 0, "Amount must be greater than 0");
         assert!(
             !self.payments.contains_key(&payment_id),
@@ -189,6 +194,18 @@ mod tests {
         contract.lock_funds("pay_001".to_string(), 100_000_000);
         contract.release_funds("pay_001".to_string());
         contract.release_funds("pay_001".to_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "Only owner can lock funds")]
+    fn test_lock_funds_non_owner_panics() {
+        let context = get_context(accounts(0));
+        testing_env!(context.build());
+        let mut contract = EscrowContract::new(accounts(0));
+
+        let context2 = get_context(accounts(1));
+        testing_env!(context2.build());
+        contract.lock_funds("pay_001".to_string(), 100_000_000);
     }
 
     #[test]

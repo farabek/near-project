@@ -88,6 +88,7 @@ describe('POST /api/swap', () => {
 
     const res = await request(app)
       .post('/api/swap')
+      .set('x-api-key', 'test-api-key')
       .send({ amountNEAR: '1', minAmountOut: '0' });
 
     expect(res.status).toBe(200);
@@ -96,8 +97,17 @@ describe('POST /api/swap', () => {
     expect(swapNEARtoUSDC).toHaveBeenCalled();
   });
 
+  it('returns 401 if API key is missing', async () => {
+    const res = await request(app).post('/api/swap').send({ amountNEAR: '1' });
+    expect(res.status).toBe(401);
+    expect(res.body.error).toMatch(/Unauthorized/);
+  });
+
   it('returns 400 if amountNEAR is missing', async () => {
-    const res = await request(app).post('/api/swap').send({});
+    const res = await request(app)
+      .post('/api/swap')
+      .set('x-api-key', 'test-api-key')
+      .send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/amountNEAR/);
   });
@@ -108,6 +118,7 @@ describe('POST /api/swap', () => {
 
     const res = await request(app)
       .post('/api/swap')
+      .set('x-api-key', 'test-api-key')
       .send({ amountNEAR: '0.5' });
 
     expect(res.status).toBe(200);
@@ -127,6 +138,7 @@ describe('POST /api/lock', () => {
 
     const res = await request(app)
       .post('/api/lock')
+      .set('x-api-key', 'test-api-key')
       .send({ paymentId: 'pay_001', amountUsdc: 100000000 });
 
     expect(res.status).toBe(200);
@@ -139,13 +151,25 @@ describe('POST /api/lock', () => {
     );
   });
 
+  it('returns 401 if API key is missing', async () => {
+    const res = await request(app).post('/api/lock').send({ paymentId: 'pay_001', amountUsdc: 100000000 });
+    expect(res.status).toBe(401);
+    expect(res.body.error).toMatch(/Unauthorized/);
+  });
+
   it('returns 400 if paymentId is missing', async () => {
-    const res = await request(app).post('/api/lock').send({ amountUsdc: 100000000 });
+    const res = await request(app)
+      .post('/api/lock')
+      .set('x-api-key', 'test-api-key')
+      .send({ amountUsdc: 100000000 });
     expect(res.status).toBe(400);
   });
 
   it('returns 400 if amountUsdc is missing', async () => {
-    const res = await request(app).post('/api/lock').send({ paymentId: 'pay_001' });
+    const res = await request(app)
+      .post('/api/lock')
+      .set('x-api-key', 'test-api-key')
+      .send({ paymentId: 'pay_001' });
     expect(res.status).toBe(400);
   });
 });

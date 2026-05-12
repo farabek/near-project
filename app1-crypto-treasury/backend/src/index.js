@@ -41,7 +41,7 @@ app.get('/api/balance', async (req, res) => {
 // ─── POST /api/swap ──────────────────────────────────────────────────────────
 // Конвертирует NEAR → USDC через Ref Finance
 // Body: { amountNEAR: "1.5", minAmountOut: "0" }
-app.post('/api/swap', async (req, res) => {
+app.post('/api/swap', requireApiKey, async (req, res) => {
   const { amountNEAR, minAmountOut = '0' } = req.body;
   if (!amountNEAR) {
     return res.status(400).json({ error: 'amountNEAR is required' });
@@ -60,7 +60,7 @@ app.post('/api/swap', async (req, res) => {
 // ─── POST /api/lock ──────────────────────────────────────────────────────────
 // Блокирует USDC в эскроу-контракте
 // Body: { paymentId: "pay_001", amountUsdc: 100000000 }
-app.post('/api/lock', async (req, res) => {
+app.post('/api/lock', requireApiKey, async (req, res) => {
   const { paymentId, amountUsdc } = req.body;
   if (!paymentId || amountUsdc == null) {
     return res.status(400).json({ error: 'paymentId and amountUsdc are required' });
