@@ -1,5 +1,8 @@
 const express = require('express');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 const { config, validateConfig } = require('./config');
 const {
   initDb,
@@ -12,6 +15,9 @@ const { startScheduler, registerSchedule, unregisterSchedule, stopAllSchedules }
 
 const app = express();
 app.use(express.json());
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : false }));
+app.use('/api/', rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 let db;
