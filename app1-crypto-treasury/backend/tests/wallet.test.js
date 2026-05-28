@@ -73,7 +73,7 @@ describe('wallet', () => {
         },
       };
 
-      const result = await getUSDCBalance(mockAccount);
+      const result = await getUSDCBalance(mockAccount, 'usdc.fakes.testnet');
 
       const argsBase64 = Buffer.from(JSON.stringify({ account_id: 'myapp.testnet' })).toString('base64');
       expect(mockAccount.connection.provider.query).toHaveBeenCalledWith({
@@ -98,7 +98,7 @@ describe('wallet', () => {
         },
       };
 
-      const result = await getUSDCBalance(mockAccount);
+      const result = await getUSDCBalance(mockAccount, 'usdc.fakes.testnet');
       expect(result).toEqual({ raw: '0', usdc: '0.00' });
     });
   });

@@ -38,7 +38,7 @@ app.get('/api/balance', async (req, res) => {
   try {
     const [near, usdc] = await Promise.all([
       getNEARBalance(account),
-      getUSDCBalance(account),
+      getUSDCBalance(account, config.usdcContract),
     ]);
     res.json({ near: near.near, yocto: near.yocto, usdc: usdc.usdc, usdcRaw: usdc.raw });
   } catch (err) {
@@ -57,8 +57,8 @@ app.post('/api/swap', requireApiKey, async (req, res) => {
 
   try {
     const amountYocto = nearAPI.utils.format.parseNearAmount(amountNEAR);
-    await wrapNEAR(account, amountYocto);
-    await swapNEARtoUSDC(account, amountYocto, minAmountOut);
+    await wrapNEAR(account, amountYocto, config.wNear);
+    await swapNEARtoUSDC(account, amountYocto, minAmountOut, config);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

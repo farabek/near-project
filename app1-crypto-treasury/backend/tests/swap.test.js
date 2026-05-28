@@ -1,4 +1,6 @@
-const { wrapNEAR, swapNEARtoUSDC, WNEAR_USDC_POOL_ID } = require('../src/swap');
+const { wrapNEAR, swapNEARtoUSDC } = require('../src/swap');
+
+const WNEAR_USDC_POOL_ID = 54;
 
 const mockAccount = { functionCall: jest.fn() };
 
@@ -8,7 +10,7 @@ describe('swap', () => {
       mockAccount.functionCall.mockResolvedValue({});
 
       const amountYocto = '1000000000000000000000000'; // 1 NEAR
-      await wrapNEAR(mockAccount, amountYocto);
+      await wrapNEAR(mockAccount, amountYocto, 'wrap.testnet');
 
       expect(mockAccount.functionCall).toHaveBeenCalledWith({
         contractId: 'wrap.testnet',
@@ -25,7 +27,12 @@ describe('swap', () => {
       mockAccount.functionCall.mockResolvedValue({});
 
       const amountYocto = '1000000000000000000000000';
-      await swapNEARtoUSDC(mockAccount, amountYocto, '0');
+      await swapNEARtoUSDC(mockAccount, amountYocto, '0', {
+        refFinance: 'ref-finance-101.testnet',
+        wNear: 'wrap.testnet',
+        usdcContract: 'usdc.fakes.testnet',
+        wNearUsdcPoolId: WNEAR_USDC_POOL_ID,
+      });
 
       expect(mockAccount.functionCall).toHaveBeenCalledWith({
         contractId: 'wrap.testnet',
@@ -54,7 +61,12 @@ describe('swap', () => {
       mockAccount.functionCall.mockResolvedValue({});
 
       const amountYocto = '500000000000000000000000'; // 0.5 NEAR
-      await swapNEARtoUSDC(mockAccount, amountYocto, '400000'); // min 0.4 USDC
+      await swapNEARtoUSDC(mockAccount, amountYocto, '400000', {
+        refFinance: 'ref-finance-101.testnet',
+        wNear: 'wrap.testnet',
+        usdcContract: 'usdc.fakes.testnet',
+        wNearUsdcPoolId: WNEAR_USDC_POOL_ID,
+      }); // min 0.4 USDC
 
       const call = mockAccount.functionCall.mock.calls[0][0];
       const msg = JSON.parse(call.args.msg);

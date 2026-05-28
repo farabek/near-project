@@ -1,6 +1,5 @@
 const nearAPI = require('near-api-js');
 
-const USDC_CONTRACT = 'usdc.fakes.testnet';
 const USDC_DECIMALS = 6;
 
 async function loadAccount(config) {
@@ -28,11 +27,11 @@ async function getNEARBalance(account) {
   return { yocto: state.amount, near };
 }
 
-async function getUSDCBalance(account) {
+async function getUSDCBalance(account, usdcContract) {
   const argsBase64 = Buffer.from(JSON.stringify({ account_id: account.accountId })).toString('base64');
   const result = await account.connection.provider.query({
     request_type: 'call_function',
-    account_id: USDC_CONTRACT,
+    account_id: usdcContract,
     method_name: 'ft_balance_of',
     args_base64: argsBase64,
     finality: 'final',
