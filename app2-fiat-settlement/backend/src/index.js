@@ -190,8 +190,13 @@ app.delete('/api/schedules/:id', requireAuth, (req, res) => {
 });
 
 if (require.main === module) {
-  validateConfig();
-  initApp();
+  try {
+    validateConfig();
+    initApp();
+  } catch (err) {
+    console.error('Failed to initialize App 2:', err.message);
+    process.exit(1);
+  }
   startScheduler(db, config);
   app.listen(config.port, () => {
     console.log(`App 2 Fiat Settlement running on port ${config.port}`);
