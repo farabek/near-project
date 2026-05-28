@@ -5,3 +5,7 @@ near_project/
 *.pdf
 *.png
 NEAR AI*/
+**/.env
+data/*.db
+data/*.db-shm
+data/*.db-wal
