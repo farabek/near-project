@@ -54,6 +54,12 @@ app.get('/api/schools', (req, res) => {
 app.post('/api/schools', requireAuth, (req, res) => {
   const { name, bank_details, currency } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
+  if (typeof name === 'string' && name.length > 200) {
+    return res.status(400).json({ error: 'name must be 200 characters or less' });
+  }
+  if (bank_details && typeof bank_details === 'string' && bank_details.length > 500) {
+    return res.status(400).json({ error: 'bank_details must be 500 characters or less' });
+  }
   try {
     res.status(201).json(addSchool(db, { name, bank_details, currency }));
   } catch (err) {
@@ -98,6 +104,9 @@ app.post('/api/payments', requireAuth, (req, res) => {
   const parsedAmount = Number(amount);
   if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount)) {
     return res.status(400).json({ error: 'school_id and amount (positive integer) are required' });
+  }
+  if (notes && typeof notes === 'string' && notes.length > 500) {
+    return res.status(400).json({ error: 'notes must be 500 characters or less' });
   }
   const school = getSchool(db, school_id);
   if (!school) return res.status(404).json({ error: 'School not found' });
