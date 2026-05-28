@@ -112,21 +112,14 @@ describe('POST /api/swap', () => {
     expect(res.body.error).toMatch(/amountNEAR/);
   });
 
-  it('uses default minAmountOut of 0 if not provided', async () => {
-    wrapNEAR.mockResolvedValue({});
-    swapNEARtoUSDC.mockResolvedValue({});
-
+  it('returns 400 if minAmountOut is not provided', async () => {
     const res = await request(app)
       .post('/api/swap')
       .set('x-api-key', 'test-api-key')
       .send({ amountNEAR: '0.5' });
 
-    expect(res.status).toBe(200);
-    expect(swapNEARtoUSDC).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.any(String),
-      '0'
-    );
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/minAmountOut/);
   });
 });
 

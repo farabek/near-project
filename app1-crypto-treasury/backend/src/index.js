@@ -48,9 +48,9 @@ app.get('/api/balance', async (req, res) => {
 // Конвертирует NEAR → USDC через Ref Finance
 // Body: { amountNEAR: "1.5", minAmountOut: "0" }
 app.post('/api/swap', requireApiKey, async (req, res) => {
-  const { amountNEAR, minAmountOut = '0' } = req.body;
-  if (!amountNEAR) {
-    return res.status(400).json({ error: 'amountNEAR is required' });
+  const { amountNEAR, minAmountOut } = req.body;
+  if (!amountNEAR || minAmountOut == null) {
+    return res.status(400).json({ error: 'amountNEAR and minAmountOut are required' });
   }
 
   try {
