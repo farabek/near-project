@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { getAllSchedules, createPayment, confirmPayment } = require('./db');
-const { mockSendPayment } = require('./payment');
+const { mockSendPayment, releaseApp1 } = require('./payment');
 
 const activeTasks = new Map();
 
@@ -53,7 +53,17 @@ async function runScheduledPayment(db, config, schedule) {
     currency: schedule.currency,
   });
 
-  confirmPayment(db, payment.id, { app1_released: false });
+  let app1Released = false;
+  if (schedule.app1_payment_id) {
+    try {
+      await releaseApp1(config.app1Url, config.app1ApiKey, schedule.app1_payment_id);
+      app1Released = true;
+    } catch (err) {
+      console.error(`Scheduler: App 1 release failed for schedule ${schedule.id}:`, err);
+    }
+  }
+
+  confirmPayment(db, payment.id, { app1_released: app1Released });
   return payment;
 }
 

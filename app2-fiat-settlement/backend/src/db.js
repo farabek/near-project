@@ -32,13 +32,14 @@ function initDb(dbPath) {
     );
 
     CREATE TABLE IF NOT EXISTS schedules (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      school_id  INTEGER NOT NULL REFERENCES schools(id),
-      amount     REAL NOT NULL,
-      currency   TEXT NOT NULL DEFAULT 'USD',
-      cron_expr  TEXT NOT NULL,
-      active     INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      id               INTEGER PRIMARY KEY AUTOINCREMENT,
+      school_id        INTEGER NOT NULL REFERENCES schools(id),
+      app1_payment_id  TEXT,
+      amount           REAL NOT NULL,
+      currency         TEXT NOT NULL DEFAULT 'USD',
+      cron_expr        TEXT NOT NULL,
+      active           INTEGER NOT NULL DEFAULT 1,
+      created_at       TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
 
@@ -111,10 +112,10 @@ function confirmPayment(db, id, { app1_released }) {
 
 // ─── Schedules ────────────────────────────────────────────────────────────────
 
-function createSchedule(db, { school_id, amount, currency = 'USD', cron_expr }) {
+function createSchedule(db, { school_id, app1_payment_id, amount, currency = 'USD', cron_expr }) {
   const result = db.prepare(
-    'INSERT INTO schedules (school_id, amount, currency, cron_expr) VALUES (?, ?, ?, ?)'
-  ).run(school_id, amount, currency, cron_expr);
+    'INSERT INTO schedules (school_id, app1_payment_id, amount, currency, cron_expr) VALUES (?, ?, ?, ?, ?)'
+  ).run(school_id, app1_payment_id || null, amount, currency, cron_expr);
   return getSchedule(db, result.lastInsertRowid);
 }
 

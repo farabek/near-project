@@ -1,3 +1,8 @@
+jest.mock('../src/payment', () => ({
+  mockSendPayment: jest.fn().mockResolvedValue({ success: true, ref: 'mock_ref' }),
+  releaseApp1: jest.fn(),
+}));
+
 const path = require('path');
 const fs = require('fs');
 
@@ -6,11 +11,17 @@ const TEST_DB = path.join(__dirname, '../data/scheduler-test.db');
 let db;
 let dbModule;
 let schedulerModule;
+let paymentModule;
 
 beforeEach(() => {
   jest.resetModules();
+  jest.mock('../src/payment', () => ({
+    mockSendPayment: jest.fn().mockResolvedValue({ success: true, ref: 'mock_ref' }),
+    releaseApp1: jest.fn(),
+  }));
   dbModule = require('../src/db');
   schedulerModule = require('../src/scheduler');
+  paymentModule = require('../src/payment');
   db = dbModule.initDb(TEST_DB);
 });
 
@@ -45,6 +56,35 @@ describe('runScheduledPayment', () => {
 
     const payments = dbModule.getAllPayments(db);
     expect(payments[0].sent_at).toBeTruthy();
+  });
+
+  test('calls releaseApp1 when app1_payment_id is set and sets app1_released=1', async () => {
+    paymentModule.releaseApp1.mockResolvedValue({ success: true });
+    const school = dbModule.addSchool(db, { name: 'School', currency: 'USD' });
+    const schedule = {
+      id: 1, school_id: school.id, amount: 100, currency: 'USD', app1_payment_id: 'pay_001',
+    };
+
+    await schedulerModule.runScheduledPayment(db, testConfig, schedule);
+
+    expect(paymentModule.releaseApp1).toHaveBeenCalledWith(
+      testConfig.app1Url, testConfig.app1ApiKey, 'pay_001'
+    );
+    const payments = dbModule.getAllPayments(db);
+    expect(payments[0].app1_released).toBe(1);
+  });
+
+  test('sets app1_released=0 when releaseApp1 fails', async () => {
+    paymentModule.releaseApp1.mockRejectedValue(new Error('App 1 down'));
+    const school = dbModule.addSchool(db, { name: 'School2', currency: 'USD' });
+    const schedule = {
+      id: 2, school_id: school.id, amount: 50, currency: 'USD', app1_payment_id: 'pay_002',
+    };
+
+    await schedulerModule.runScheduledPayment(db, testConfig, schedule);
+
+    const payments = dbModule.getAllPayments(db);
+    expect(payments[0].app1_released).toBe(0);
   });
 });
 

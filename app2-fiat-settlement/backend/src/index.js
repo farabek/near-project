@@ -137,7 +137,7 @@ app.get('/api/schedules', (req, res) => {
 });
 
 app.post('/api/schedules', requireAuth, (req, res) => {
-  const { school_id, amount, currency, cron_expr } = req.body;
+  const { school_id, app1_payment_id, amount, currency, cron_expr } = req.body;
   if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0 || !cron_expr) {
     return res.status(400).json({ error: 'school_id, amount (positive number), and cron_expr are required' });
   }
@@ -147,7 +147,7 @@ app.post('/api/schedules', requireAuth, (req, res) => {
   const school = getSchool(db, school_id);
   if (!school) return res.status(404).json({ error: 'School not found' });
   try {
-    const schedule = createSchedule(db, { school_id, amount, currency, cron_expr });
+    const schedule = createSchedule(db, { school_id, app1_payment_id, amount, currency, cron_expr });
     registerSchedule(db, config, schedule);
     res.status(201).json(schedule);
   } catch (err) {
