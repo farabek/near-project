@@ -51,7 +51,7 @@ app.get('/api/balance', async (req, res) => {
 // Body: { amountNEAR: "1.5", minAmountOut: "0" }
 app.post('/api/swap', requireApiKey, async (req, res) => {
   const { amountNEAR, minAmountOut } = req.body;
-  if (!amountNEAR || minAmountOut == null) {
+  if (!amountNEAR || minAmountOut == null || minAmountOut === '') {
     return res.status(400).json({ error: 'amountNEAR and minAmountOut are required' });
   }
 

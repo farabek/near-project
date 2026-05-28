@@ -213,10 +213,10 @@ describe('GET /api/payments pagination', () => {
     }
   });
 
-  test('returns at most limit payments when limit param provided', async () => {
+  test('returns exactly limit payments when more exist', async () => {
     const res = await request(app).get('/api/payments?limit=2&offset=0');
     expect(res.status).toBe(200);
-    expect(res.body.length).toBeLessThanOrEqual(2);
+    expect(res.body.length).toBe(2);
   });
 
   test('limit cannot exceed 200', async () => {

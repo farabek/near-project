@@ -121,6 +121,16 @@ describe('POST /api/swap', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/minAmountOut/);
   });
+
+  it('returns 400 if minAmountOut is empty string', async () => {
+    const res = await request(app)
+      .post('/api/swap')
+      .set('x-api-key', 'test-api-key')
+      .send({ amountNEAR: '1', minAmountOut: '' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/minAmountOut/);
+  });
 });
 
 // ─── POST /api/lock ───────────────────────────────────────────────────────────
