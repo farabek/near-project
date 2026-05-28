@@ -97,7 +97,13 @@ app.post('/api/payments', requireAuth, (req, res) => {
 app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   const payment = getPayment(db, req.params.id);
   if (!payment) return res.status(404).json({ error: 'Payment not found' });
-  if (payment.status === 'sent') return res.status(400).json({ error: 'Payment already sent' });
+
+  const locked = db.prepare(
+    "UPDATE payments SET status='processing' WHERE id=? AND status='pending'"
+  ).run(req.params.id);
+  if (locked.changes === 0) {
+    return res.status(400).json({ error: 'Payment already sent or in progress' });
+  }
 
   try {
     const school = getSchool(db, payment.school_id);
