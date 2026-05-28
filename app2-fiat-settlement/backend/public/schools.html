@@ -63,14 +63,18 @@
     </div>
   </div>
   <script>
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     async function loadSchools() {
       const schools = await fetch('/api/schools').then(r => r.json());
       const rows = schools.map(s => `
         <tr>
-          <td>${s.name}</td>
-          <td>${s.currency}</td>
-          <td style="color:#64748b;font-size:13px">${s.bank_details || '—'}</td>
-          <td><button class="btn-danger" onclick="deleteSchool(${s.id}, '${s.name.replace(/'/g, "\\'")}')">Удалить</button></td>
+          <td>${escapeHtml(s.name)}</td>
+          <td>${escapeHtml(s.currency)}</td>
+          <td style="color:#64748b;font-size:13px">${escapeHtml(s.bank_details || '—')}</td>
+          <td><button class="btn-danger" onclick="deleteSchool(${Number(s.id)})">Удалить</button></td>
         </tr>
       `).join('');
       document.getElementById('schoolsTable').innerHTML = rows || '<tr><td colspan="4">Нет школ</td></tr>';
@@ -102,8 +106,8 @@
       loadSchools();
     }
 
-    async function deleteSchool(id, name) {
-      if (!confirm(`Удалить "${name}"?`)) return;
+    async function deleteSchool(id) {
+      if (!confirm('Удалить эту школу?')) return;
       const res = await fetch(`/api/schools/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) { alert(data.error); return; }

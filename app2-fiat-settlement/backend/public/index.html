@@ -68,6 +68,10 @@
     </table>
   </div>
   <script>
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     async function load() {
       const [paymentsRes, schoolsRes, schedulesRes] = await Promise.all([
         fetch('/api/payments').then(r => r.json()),
@@ -94,10 +98,10 @@
 
       const rows = paymentsRes.slice(0, 10).map(p => `
         <tr>
-          <td>${schoolMap[p.school_id] || '—'}</td>
-          <td>${p.amount} ${p.currency}</td>
-          <td><span class="badge ${p.status}">${p.status}</span></td>
-          <td>${p.created_at.slice(0, 10)}</td>
+          <td>${escapeHtml(schoolMap[p.school_id]) || '—'}</td>
+          <td>${escapeHtml(String(p.amount))} ${escapeHtml(p.currency)}</td>
+          <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
+          <td>${escapeHtml(p.created_at.slice(0, 10))}</td>
         </tr>
       `).join('');
       document.getElementById('paymentsTable').innerHTML = rows || '<tr><td colspan="4">Нет выплат</td></tr>';

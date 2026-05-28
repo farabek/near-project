@@ -72,6 +72,10 @@
     </div>
   </div>
   <script>
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     let schoolMap = {};
 
     async function loadData() {
@@ -84,16 +88,16 @@
       schools.forEach(s => { schoolMap[s.id] = s.name; });
 
       const select = document.getElementById('school_id');
-      select.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      select.innerHTML = schools.map(s => `<option value="${escapeHtml(String(s.id))}">${escapeHtml(s.name)}</option>`).join('');
 
       const rows = payments.map(p => `
         <tr>
-          <td>${schoolMap[p.school_id] || '—'}</td>
-          <td>${p.amount} ${p.currency}</td>
-          <td style="font-family:monospace;font-size:12px;color:#64748b">${p.app1_payment_id || '—'}</td>
-          <td><span class="badge ${p.status}">${p.status}</span></td>
-          <td>${p.created_at.slice(0, 10)}</td>
-          <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${p.id})">✓ Отправить</button>` : ''}</td>
+          <td>${escapeHtml(schoolMap[p.school_id]) || '—'}</td>
+          <td>${escapeHtml(String(p.amount))} ${escapeHtml(p.currency)}</td>
+          <td style="font-family:monospace;font-size:12px;color:#64748b">${escapeHtml(p.app1_payment_id || '—')}</td>
+          <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
+          <td>${escapeHtml(p.created_at.slice(0, 10))}</td>
+          <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${Number(p.id)})">✓ Отправить</button>` : ''}</td>
         </tr>
       `).join('');
       document.getElementById('paymentsTable').innerHTML = rows || '<tr><td colspan="6">Нет выплат</td></tr>';

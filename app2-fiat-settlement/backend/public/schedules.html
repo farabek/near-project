@@ -74,6 +74,10 @@
     </div>
   </div>
   <script>
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     let schoolMap = {};
 
     async function loadData() {
@@ -86,17 +90,17 @@
       schools.forEach(s => { schoolMap[s.id] = s.name; });
 
       const select = document.getElementById('school_id');
-      select.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      select.innerHTML = schools.map(s => `<option value="${escapeHtml(String(s.id))}">${escapeHtml(s.name)}</option>`).join('');
 
       const rows = schedules.map(s => `
         <tr>
-          <td>${schoolMap[s.school_id] || '—'}</td>
-          <td>${s.amount} ${s.currency}</td>
-          <td style="font-family:monospace;font-size:12px">${s.cron_expr}</td>
+          <td>${escapeHtml(schoolMap[s.school_id]) || '—'}</td>
+          <td>${escapeHtml(String(s.amount))} ${escapeHtml(s.currency)}</td>
+          <td style="font-family:monospace;font-size:12px">${escapeHtml(s.cron_expr)}</td>
           <td><span class="badge ${s.active ? 'active' : 'paused'}">${s.active ? '● активно' : '○ пауза'}</span></td>
           <td>
-            <button class="btn-sm" onclick="toggleSchedule(${s.id}, ${s.active ? 0 : 1})">${s.active ? 'Пауза' : 'Запустить'}</button>
-            <button class="btn-sm btn-danger" onclick="deleteSchedule(${s.id})">Удалить</button>
+            <button class="btn-sm" onclick="toggleSchedule(${Number(s.id)}, ${s.active ? 0 : 1})">${s.active ? 'Пауза' : 'Запустить'}</button>
+            <button class="btn-sm btn-danger" onclick="deleteSchedule(${Number(s.id)})">Удалить</button>
           </td>
         </tr>
       `).join('');
