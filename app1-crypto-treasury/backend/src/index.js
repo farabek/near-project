@@ -16,6 +16,8 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : false }));
 app.use('/api/', rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
+
 let account;
 
 async function initAccount() {

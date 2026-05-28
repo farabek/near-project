@@ -43,6 +43,8 @@ function closeDb() {
   }
 }
 
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
+
 // ─── Schools ──────────────────────────────────────────────────────────────────
 
 app.get('/api/schools', (req, res) => {
