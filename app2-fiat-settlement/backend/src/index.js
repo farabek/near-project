@@ -16,6 +16,14 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 let db;
 
+function requireAuth(req, res, next) {
+  const key = req.headers['x-api-key'];
+  if (!key || key !== config.adminApiKey) {
+    return res.status(401).json({ error: 'Unauthorized: invalid or missing API key' });
+  }
+  next();
+}
+
 function initApp(dbPath) {
   db = initDb(dbPath || config.dbPath);
   return app;
@@ -35,7 +43,7 @@ app.get('/api/schools', (req, res) => {
   res.json(getAllSchools(db));
 });
 
-app.post('/api/schools', (req, res) => {
+app.post('/api/schools', requireAuth, (req, res) => {
   const { name, bank_details, currency } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   try {
@@ -45,7 +53,7 @@ app.post('/api/schools', (req, res) => {
   }
 });
 
-app.put('/api/schools/:id', (req, res) => {
+app.put('/api/schools/:id', requireAuth, (req, res) => {
   const school = getSchool(db, req.params.id);
   if (!school) return res.status(404).json({ error: 'School not found' });
   try {
@@ -55,7 +63,7 @@ app.put('/api/schools/:id', (req, res) => {
   }
 });
 
-app.delete('/api/schools/:id', (req, res) => {
+app.delete('/api/schools/:id', requireAuth, (req, res) => {
   const school = getSchool(db, req.params.id);
   if (!school) return res.status(404).json({ error: 'School not found' });
   try {
@@ -72,7 +80,7 @@ app.get('/api/payments', (req, res) => {
   res.json(getAllPayments(db));
 });
 
-app.post('/api/payments', (req, res) => {
+app.post('/api/payments', requireAuth, (req, res) => {
   const { school_id, app1_payment_id, amount, currency, notes } = req.body;
   if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0) {
     return res.status(400).json({ error: 'school_id and amount (positive number) are required' });
@@ -86,7 +94,7 @@ app.post('/api/payments', (req, res) => {
   }
 });
 
-app.post('/api/payments/:id/confirm', async (req, res) => {
+app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   const payment = getPayment(db, req.params.id);
   if (!payment) return res.status(404).json({ error: 'Payment not found' });
   if (payment.status === 'sent') return res.status(400).json({ error: 'Payment already sent' });
@@ -122,7 +130,7 @@ app.get('/api/schedules', (req, res) => {
   res.json(getAllSchedules(db));
 });
 
-app.post('/api/schedules', (req, res) => {
+app.post('/api/schedules', requireAuth, (req, res) => {
   const { school_id, amount, currency, cron_expr } = req.body;
   if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0 || !cron_expr) {
     return res.status(400).json({ error: 'school_id, amount (positive number), and cron_expr are required' });
@@ -141,7 +149,7 @@ app.post('/api/schedules', (req, res) => {
   }
 });
 
-app.patch('/api/schedules/:id', (req, res) => {
+app.patch('/api/schedules/:id', requireAuth, (req, res) => {
   const schedule = getSchedule(db, req.params.id);
   if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
   const { active } = req.body;
@@ -155,7 +163,7 @@ app.patch('/api/schedules/:id', (req, res) => {
   }
 });
 
-app.delete('/api/schedules/:id', (req, res) => {
+app.delete('/api/schedules/:id', requireAuth, (req, res) => {
   const schedule = getSchedule(db, req.params.id);
   if (!schedule) return res.status(404).json({ error: 'Schedule not found' });
   try {
