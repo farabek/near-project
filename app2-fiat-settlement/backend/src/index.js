@@ -82,8 +82,9 @@ app.get('/api/payments', (req, res) => {
 
 app.post('/api/payments', requireAuth, (req, res) => {
   const { school_id, app1_payment_id, amount, currency, notes } = req.body;
-  if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0) {
-    return res.status(400).json({ error: 'school_id and amount (positive number) are required' });
+  const parsedAmount = Number(amount);
+  if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount)) {
+    return res.status(400).json({ error: 'school_id and amount (positive integer) are required' });
   }
   const school = getSchool(db, school_id);
   if (!school) return res.status(404).json({ error: 'School not found' });
@@ -138,8 +139,9 @@ app.get('/api/schedules', (req, res) => {
 
 app.post('/api/schedules', requireAuth, (req, res) => {
   const { school_id, app1_payment_id, amount, currency, cron_expr } = req.body;
-  if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0 || !cron_expr) {
-    return res.status(400).json({ error: 'school_id, amount (positive number), and cron_expr are required' });
+  const parsedAmount = Number(amount);
+  if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount) || !cron_expr) {
+    return res.status(400).json({ error: 'school_id, amount (positive integer), and cron_expr are required' });
   }
   if (!require('node-cron').validate(cron_expr)) {
     return res.status(400).json({ error: 'Invalid cron expression' });

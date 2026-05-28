@@ -118,7 +118,7 @@ describe('POST /api/payments', () => {
       .set('x-api-key', ADMIN_KEY)
       .send({ school_id: schoolId, amount: 'abc', currency: 'USD' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/positive number/i);
+    expect(res.body.error).toMatch(/positive integer/i);
   });
 
   test('returns 400 when amount is negative', async () => {
@@ -127,7 +127,16 @@ describe('POST /api/payments', () => {
       .set('x-api-key', ADMIN_KEY)
       .send({ school_id: schoolId, amount: -50, currency: 'USD' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/positive number/i);
+    expect(res.body.error).toMatch(/positive integer/i);
+  });
+
+  test('returns 400 when amount is fractional', async () => {
+    const res = await request(app)
+      .post('/api/payments')
+      .set('x-api-key', ADMIN_KEY)
+      .send({ school_id: schoolId, amount: 99.5, currency: 'USD' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/i);
   });
 });
 
@@ -222,6 +231,6 @@ describe('Schedules API', () => {
       .set('x-api-key', ADMIN_KEY)
       .send({ school_id: schoolId, amount: 'abc', currency: 'USD', cron_expr: '0 9 1 * *' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/positive number/i);
+    expect(res.body.error).toMatch(/positive integer/i);
   });
 });
