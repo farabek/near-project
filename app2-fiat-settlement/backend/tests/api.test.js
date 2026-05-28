@@ -195,6 +195,37 @@ describe('DELETE /api/schools/:id', () => {
   });
 });
 
+describe('GET /api/payments pagination', () => {
+  let paginationSchoolId;
+
+  beforeAll(async () => {
+    const res = await request(app)
+      .post('/api/schools')
+      .set('x-api-key', ADMIN_KEY)
+      .send({ name: 'Pagination School', currency: 'USD' });
+    paginationSchoolId = res.body.id;
+
+    for (let i = 0; i < 5; i++) {
+      await request(app)
+        .post('/api/payments')
+        .set('x-api-key', ADMIN_KEY)
+        .send({ school_id: paginationSchoolId, amount: 100 + i, currency: 'USD' });
+    }
+  });
+
+  test('returns at most limit payments when limit param provided', async () => {
+    const res = await request(app).get('/api/payments?limit=2&offset=0');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeLessThanOrEqual(2);
+  });
+
+  test('limit cannot exceed 200', async () => {
+    const res = await request(app).get('/api/payments?limit=999&offset=0');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeLessThanOrEqual(200);
+  });
+});
+
 describe('Schedules API', () => {
   let schoolId;
 

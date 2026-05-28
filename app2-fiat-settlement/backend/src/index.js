@@ -7,7 +7,7 @@ const { config, validateConfig } = require('./config');
 const {
   initDb,
   addSchool, getSchool, getAllSchools, updateSchool, deleteSchool,
-  createPayment, getPayment, getAllPayments, confirmPayment,
+  createPayment, getPayment, getAllPayments, confirmPayment, getPaymentsPaginated,
   createSchedule, getSchedule, getAllSchedules, toggleSchedule, deleteSchedule,
 } = require('./db');
 const { mockSendPayment, releaseApp1 } = require('./payment');
@@ -83,6 +83,11 @@ app.delete('/api/schools/:id', requireAuth, (req, res) => {
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 app.get('/api/payments', (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = parseInt(req.query.offset) || 0;
+  if (req.query.limit !== undefined || req.query.offset !== undefined) {
+    return res.json(getPaymentsPaginated(db, limit, offset));
+  }
   res.json(getAllPayments(db));
 });
 

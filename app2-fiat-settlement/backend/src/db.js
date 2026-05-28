@@ -100,6 +100,12 @@ function getAllPayments(db) {
   return db.prepare('SELECT * FROM payments ORDER BY created_at DESC').all();
 }
 
+function getPaymentsPaginated(db, limit, offset) {
+  return db.prepare(
+    'SELECT * FROM payments ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  ).all(limit, offset);
+}
+
 function confirmPayment(db, id, { app1_released }) {
   if (!getPayment(db, id)) throw new Error('Payment not found');
   db.prepare(`
@@ -139,6 +145,6 @@ function deleteSchedule(db, id) {
 module.exports = {
   initDb,
   addSchool, getSchool, getAllSchools, updateSchool, deleteSchool,
-  createPayment, getPayment, getAllPayments, confirmPayment,
+  createPayment, getPayment, getAllPayments, confirmPayment, getPaymentsPaginated,
   createSchedule, getSchedule, getAllSchedules, toggleSchedule, deleteSchedule,
 };
