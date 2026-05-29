@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>App 2 — Школы</title>
+  <title>App 2 — Schools</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; }
@@ -30,23 +30,23 @@
 <body>
   <nav>
     <span class="brand">💰 Edu-Arbitrage</span>
-    <a href="/">Дашборд</a>
-    <a href="/schools.html" class="active">Школы</a>
-    <a href="/payments.html">Выплаты</a>
-    <a href="/schedules.html">Расписания</a>
+    <a href="/">Dashboard</a>
+    <a href="/schools.html" class="active">Schools</a>
+    <a href="/payments.html">Payments</a>
+    <a href="/schedules.html">Schedules</a>
   </nav>
   <div class="container">
-    <h1>Школы</h1>
+    <h1>Schools</h1>
     <div class="layout">
       <table>
-        <thead><tr><th>Название</th><th>Валюта</th><th>Реквизиты</th><th></th></tr></thead>
-        <tbody id="schoolsTable"><tr><td colspan="4">Загрузка...</td></tr></tbody>
+        <thead><tr><th>Name</th><th>Currency</th><th>Bank Details</th><th></th></tr></thead>
+        <tbody id="schoolsTable"><tr><td colspan="4">Loading...</td></tr></tbody>
       </table>
       <div class="card">
-        <h2>Добавить школу</h2>
-        <label>Название *</label>
-        <input id="name" placeholder="Школа №5" />
-        <label>Валюта</label>
+        <h2>Add School</h2>
+        <label>Name *</label>
+        <input id="name" placeholder="School name" />
+        <label>Currency</label>
         <select id="currency">
           <option value="USD">USD</option>
           <option value="RUB">RUB</option>
@@ -54,9 +54,9 @@
           <option value="GBP">GBP</option>
           <option value="UZS">UZS</option>
         </select>
-        <label>Банковские реквизиты</label>
-        <input id="bank_details" placeholder="IBAN, номер счёта..." />
-        <button class="btn btn-primary" onclick="addSchool()">Добавить</button>
+        <label>Bank Details</label>
+        <input id="bank_details" placeholder="IBAN, account number..." />
+        <button class="btn btn-primary" onclick="addSchool()">Add School</button>
         <div class="error" id="error"></div>
         <div class="success" id="success"></div>
       </div>
@@ -74,10 +74,10 @@
           <td>${escapeHtml(s.name)}</td>
           <td>${escapeHtml(s.currency)}</td>
           <td style="color:#64748b;font-size:13px">${escapeHtml(s.bank_details || '—')}</td>
-          <td><button class="btn-danger" onclick="deleteSchool(${Number(s.id)})">Удалить</button></td>
+          <td><button class="btn-danger" onclick="deleteSchool(${Number(s.id)})">Delete</button></td>
         </tr>
       `).join('');
-      document.getElementById('schoolsTable').innerHTML = rows || '<tr><td colspan="4">Нет школ</td></tr>';
+      document.getElementById('schoolsTable').innerHTML = rows || '<tr><td colspan="4">No schools</td></tr>';
     }
 
     async function addSchool() {
@@ -89,7 +89,7 @@
       errEl.style.display = 'none';
       okEl.style.display = 'none';
 
-      if (!name) { errEl.textContent = 'Введите название'; errEl.style.display = 'block'; return; }
+      if (!name) { errEl.textContent = 'Please enter a name'; errEl.style.display = 'block'; return; }
 
       const res = await fetch('/api/schools', {
         method: 'POST',
@@ -99,7 +99,7 @@
       const data = await res.json();
       if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
 
-      okEl.textContent = `Школа "${data.name}" добавлена`;
+      okEl.textContent = `School "${escapeHtml(data.name)}" added`;
       okEl.style.display = 'block';
       document.getElementById('name').value = '';
       document.getElementById('bank_details').value = '';
@@ -107,7 +107,7 @@
     }
 
     async function deleteSchool(id) {
-      if (!confirm('Удалить эту школу?')) return;
+      if (!confirm('Delete this school?')) return;
       const res = await fetch(`/api/schools/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) { alert(data.error); return; }

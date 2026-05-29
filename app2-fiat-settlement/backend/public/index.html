@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>App 2 — Дашборд</title>
+  <title>App 2 — Dashboard</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; }
@@ -33,38 +33,38 @@
 <body>
   <nav>
     <span class="brand">💰 Edu-Arbitrage</span>
-    <a href="/" class="active">Дашборд</a>
-    <a href="/schools.html">Школы</a>
-    <a href="/payments.html">Выплаты</a>
-    <a href="/schedules.html">Расписания</a>
+    <a href="/" class="active">Dashboard</a>
+    <a href="/schools.html">Schools</a>
+    <a href="/payments.html">Payments</a>
+    <a href="/schedules.html">Schedules</a>
   </nav>
   <div class="container">
-    <h1>Дашборд</h1>
+    <h1>Dashboard</h1>
     <div class="stats">
       <div class="card">
-        <div class="label">Выплачено (этот месяц)</div>
+        <div class="label">Paid out (this month)</div>
         <div class="value" id="monthlyTotal">—</div>
-        <div class="sub" id="monthlyCount">загрузка...</div>
+        <div class="sub" id="monthlyCount">loading...</div>
       </div>
       <div class="card">
-        <div class="label">Ожидают подтверждения</div>
+        <div class="label">Awaiting confirmation</div>
         <div class="value" id="pendingCount">—</div>
-        <div class="sub">pending платежей</div>
+        <div class="sub">pending payments</div>
       </div>
       <div class="card">
-        <div class="label">Школ в системе</div>
+        <div class="label">Schools in system</div>
         <div class="value" id="schoolCount">—</div>
-        <div class="sub" id="scheduleCount">загрузка...</div>
+        <div class="sub" id="scheduleCount">loading...</div>
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" onclick="location.href='/payments.html'">+ Новая выплата</button>
-      <button class="btn btn-secondary" onclick="location.href='/schools.html'">Управление школами</button>
+      <button class="btn btn-primary" onclick="location.href='/payments.html'">+ New Payment</button>
+      <button class="btn btn-secondary" onclick="location.href='/schools.html'">Manage Schools</button>
     </div>
-    <div class="section-title">Последние выплаты</div>
+    <div class="section-title">Recent Payments</div>
     <table>
-      <thead><tr><th>Школа</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
-      <tbody id="paymentsTable"><tr><td colspan="4">Загрузка...</td></tr></tbody>
+      <thead><tr><th>School</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="paymentsTable"><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </div>
   <script>
@@ -88,10 +88,10 @@
       const pendingPayments = paymentsRes.filter(p => p.status === 'pending');
 
       document.getElementById('monthlyTotal').textContent = `$${monthlyTotal.toFixed(2)}`;
-      document.getElementById('monthlyCount').textContent = `${thisMonth.length} выплат`;
+      document.getElementById('monthlyCount').textContent = `${thisMonth.length} payments`;
       document.getElementById('pendingCount').textContent = pendingPayments.length;
       document.getElementById('schoolCount').textContent = schoolsRes.length;
-      document.getElementById('scheduleCount').textContent = `${schedulesRes.filter(s => s.active).length} активных расписаний`;
+      document.getElementById('scheduleCount').textContent = `${schedulesRes.filter(s => s.active).length} active schedules`;
 
       const schoolMap = {};
       schoolsRes.forEach(s => { schoolMap[s.id] = s.name; });
@@ -104,7 +104,7 @@
           <td>${escapeHtml(p.created_at.slice(0, 10))}</td>
         </tr>
       `).join('');
-      document.getElementById('paymentsTable').innerHTML = rows || '<tr><td colspan="4">Нет выплат</td></tr>';
+      document.getElementById('paymentsTable').innerHTML = rows || '<tr><td colspan="4">No payments</td></tr>';
     }
     load();
   </script>
