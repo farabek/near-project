@@ -17,7 +17,7 @@ async function loadAccount(config) {
 }
 
 /**
- * Возвращает баланс NEAR аккаунта.
+ * Returns the NEAR account balance.
  * @param {Account} account
  * @returns {Promise<{yocto: string, near: string}>}
  */

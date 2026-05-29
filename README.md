@@ -1,67 +1,67 @@
 # NEAR Edu-Arbitrage
 
-Двухприложенческая система для управления фиатными выплатами школам через крипто-казну на NEAR блокчейне.
+A two-app system for managing fiat payments to schools via a crypto treasury on the NEAR blockchain.
 
-**Статус:** Оба приложения готовы ✅ (NEAR testnet, `farab.testnet`)
+**Status:** Both apps ready ✅ (NEAR testnet, `farab.testnet`)
 
 ---
 
-## Общая архитектура
+## Architecture Overview
 
 ```text
-Спонсоры / Клиенты
+Sponsors / Clients
         │
         ▼
 ┌───────────────────┐       ┌───────────────────────┐
 │  App 1            │  API  │  App 2                │
 │  Crypto Treasury  │◀─────▶│  Fiat Settlement      │
-│  (порт 3000)      │release│  (порт 3001)          │
+│  (port 3000)      │release│  (port 3001)          │
 │                   │       │                       │
-│  NEAR / USDC      │       │  Школы / Выплаты      │
-│  Эскроу на NEAR   │       │  Расписания / SQLite  │
+│  NEAR / USDC      │       │  Schools / Payments   │
+│  Escrow on NEAR   │       │  Schedules / SQLite   │
 └───────────────────┘       └───────────────────────┘
         │
         ▼
 NEAR testnet (farab.testnet)
-Rust смарт-контракт
+Rust smart contract
 ```
 
-**Логика:**
+**Flow:**
 
-- App 1 хранит USDC в эскроу на блокчейне
-- App 2 управляет выплатами школам в фиате (mock провайдер)
-- При подтверждении выплаты App 2 вызывает App 1 → USDC разблокируется
+- App 1 holds USDC in escrow on the blockchain
+- App 2 manages school payments in fiat (mock provider)
+- When a payment is confirmed, App 2 calls App 1 → USDC is released
 
 ---
 
-## Структура репозитория
+## Repository Structure
 
 ```text
 near-project/
 ├── app1-crypto-treasury/
-│   ├── contract/           ← Rust смарт-контракт (near-sdk 5.5.0)
-│   └── backend/            ← Node.js/Express API (порт 3000)
+│   ├── contract/           ← Rust smart contract (near-sdk 5.5.0)
+│   └── backend/            ← Node.js/Express API (port 3000)
 ├── app2-fiat-settlement/
 │   └── backend/
-│       ├── src/            ← Express API (порт 3001)
-│       ├── public/         ← HTML интерфейс владельца
-│       └── tests/          ← 31 тест
+│       ├── src/            ← Express API (port 3001)
+│       ├── public/         ← Owner HTML dashboard
+│       └── tests/          ← 31 tests
 └── docs/
     └── superpowers/
-        ├── specs/          ← Дизайн-документы
-        └── plans/          ← Планы реализации
+        ├── specs/          ← Design documents
+        └── plans/          ← Implementation plans
 ```
 
 ---
 
-## Быстрый старт
+## Quick Start
 
 ### App 1 — Crypto Treasury
 
 ```powershell
 cd app1-crypto-treasury/backend
 npm install
-# Создать .env по шаблону .env.example
+# Copy .env.example to .env and fill in your values
 npm start
 # → App 1 Crypto Treasury running on port 3000
 ```
@@ -71,16 +71,16 @@ npm start
 ```powershell
 cd app2-fiat-settlement/backend
 npm install
-# Создать .env по шаблону .env.example
+# Copy .env.example to .env and fill in your values
 node src/index.js
 # → App 2 Fiat Settlement running on port 3001
 ```
 
-Открыть `http://localhost:3001` — дашборд владельца.
+Open `http://localhost:3001` — owner dashboard.
 
 ---
 
-## Переменные окружения
+## Environment Variables
 
 **App 1** (`app1-crypto-treasury/backend/.env`):
 
@@ -90,7 +90,7 @@ NEAR_PRIVATE_KEY=ed25519:...
 NEAR_CONTRACT_ID=farab.testnet
 NEAR_NETWORK=testnet
 PORT=3000
-RELEASE_API_KEY=app2-secret-key-change-in-production
+RELEASE_API_KEY=your_strong_secret_key_here
 ```
 
 **App 2** (`app2-fiat-settlement/.env`):
@@ -98,7 +98,8 @@ RELEASE_API_KEY=app2-secret-key-change-in-production
 ```env
 PORT=3001
 APP1_URL=http://localhost:3000
-APP1_RELEASE_API_KEY=app2-secret-key-change-in-production
+APP1_RELEASE_API_KEY=your_app1_release_key_here
+ADMIN_API_KEY=your_strong_admin_key_here
 DB_PATH=./data/app2.db
 ```
 
@@ -106,31 +107,31 @@ DB_PATH=./data/app2.db
 
 ## API
 
-### App 1 (порт 3000)
+### App 1 (port 3000)
 
-| Метод | Эндпоинт | Описание |
+| Method | Endpoint | Description |
 | ------- | ---------- | ---------- |
-| `GET` | `/api/balance` | NEAR + USDC баланс |
-| `POST` | `/api/lock` | Заблокировать USDC `{ paymentId, amountUsdc }` |
-| `POST` | `/api/release` | Разблокировать `{ paymentId }` + `x-api-key` |
-| `GET` | `/api/payments` | Все платежи |
-| `GET` | `/api/payments/:id` | Один платёж |
+| `GET` | `/api/balance` | NEAR + USDC balance |
+| `POST` | `/api/lock` | Lock USDC `{ paymentId, amountUsdc }` |
+| `POST` | `/api/release` | Release `{ paymentId }` + `x-api-key` |
+| `GET` | `/api/payments` | All payments |
+| `GET` | `/api/payments/:id` | Single payment |
 | `POST` | `/api/swap` | NEAR → USDC (Ref Finance) |
 
-### App 2 (порт 3001)
+### App 2 (port 3001)
 
-| Метод | Эндпоинт | Описание |
+| Method | Endpoint | Description |
 | ------- | ---------- | ---------- |
-| `GET/POST` | `/api/schools` | Список / добавить школу |
-| `PUT/DELETE` | `/api/schools/:id` | Обновить / удалить |
-| `GET/POST` | `/api/payments` | История / создать выплату |
-| `POST` | `/api/payments/:id/confirm` | Подтвердить и отправить |
-| `GET/POST` | `/api/schedules` | Список / создать расписание |
-| `PATCH/DELETE` | `/api/schedules/:id` | Пауза / удалить |
+| `GET/POST` | `/api/schools` | List / add school |
+| `PUT/DELETE` | `/api/schools/:id` | Update / delete |
+| `GET/POST` | `/api/payments` | History / create payment |
+| `POST` | `/api/payments/:id/confirm` | Confirm and send |
+| `GET/POST` | `/api/schedules` | List / create schedule |
+| `PATCH/DELETE` | `/api/schedules/:id` | Pause / delete |
 
 ---
 
-## Тесты
+## Tests
 
 ```powershell
 # App 1
@@ -144,31 +145,31 @@ cd app2-fiat-settlement/backend && npx jest --no-coverage
 
 ---
 
-## Стек
+## Stack
 
 | | App 1 | App 2 |
 | -- | ------- | ------- |
-| **Бэкенд** | Node.js, Express 4 | Node.js, Express 4 |
-| **БД** | NEAR blockchain | SQLite (better-sqlite3) |
-| **Контракт** | Rust, near-sdk 5.5.0 | — |
-| **Расписания** | — | node-cron |
-| **Фронтенд** | — | Vanilla HTML/JS |
-| **Тесты** | Jest + supertest | Jest + supertest |
+| **Backend** | Node.js, Express 4 | Node.js, Express 4 |
+| **DB** | NEAR blockchain | SQLite (better-sqlite3) |
+| **Contract** | Rust, near-sdk 5.5.0 | — |
+| **Scheduling** | — | node-cron |
+| **Frontend** | — | Vanilla HTML/JS |
+| **Tests** | Jest + supertest | Jest + supertest |
 
 ---
 
-## Известные особенности
+## Known Issues
 
-**WASM совместимость:** NEAR testnet protocol 83 несовместим с bulk-memory WASM. Контракт собирается с Rust 1.86 + постобработка `wasm-opt` с флагами `--disable-bulk-memory --disable-reference-types`.
+**WASM compatibility:** NEAR testnet protocol 83 is incompatible with bulk-memory WASM. The contract is built with Rust 1.86 + `wasm-opt` post-processing with `--disable-bulk-memory --disable-reference-types` flags.
 
-**near-api-js viewFunction:** версия 2.1.4 не передаёт `account_id` в view calls. В `escrow.js` используется прямой вызов `account.connection.provider.query(...)`.
+**near-api-js viewFunction:** version 2.1.4 does not pass `account_id` in view calls. `escrow.js` uses a direct `account.connection.provider.query(...)` call instead.
 
-**App 1 release timeout:** NEAR testnet иногда отвечает дольше 10 секунд. App 2 показывает предупреждение, но выплата помечается `sent`. Транзакция на NEAR при этом проходит асинхронно.
+**App 1 release timeout:** NEAR testnet sometimes takes longer than 10 seconds to respond. App 2 shows a warning but marks the payment as `sent`. The NEAR transaction completes asynchronously.
 
 ---
 
-## Документация
+## Documentation
 
-- [App 1 дизайн](docs/superpowers/specs/2026-05-05-crypto-treasury-design.md)
-- [App 2 дизайн](docs/superpowers/specs/2026-05-11-app2-fiat-settlement-design.md)
-- [Прогресс проекта](docs/PROGRESS.md)
+- [App 1 design](docs/superpowers/specs/2026-05-05-crypto-treasury-design.md)
+- [App 2 design](docs/superpowers/specs/2026-05-11-app2-fiat-settlement-design.md)
+- [Project progress](docs/PROGRESS.md)

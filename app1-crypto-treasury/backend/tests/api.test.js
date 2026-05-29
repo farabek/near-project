@@ -1,6 +1,6 @@
 const request = require('supertest');
 
-// Мокаем все зависимости ДО импорта app
+// Mock all dependencies BEFORE importing the app
 jest.mock('../src/config', () => ({
   config: {
     accountId: 'myapp.testnet',

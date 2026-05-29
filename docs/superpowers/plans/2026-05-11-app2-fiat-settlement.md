@@ -37,6 +37,7 @@
 ## Task 1: Project Scaffold
 
 **Files:**
+
 - Create: `app2-fiat-settlement/backend/package.json`
 - Create: `app2-fiat-settlement/backend/jest.config.js`
 - Create: `app2-fiat-settlement/backend/src/config.js`
@@ -117,12 +118,12 @@ DB_PATH=./data/app2.db
 
 - [ ] **Step 6: Create `app2-fiat-settlement/.env`**
 
-Copy `.env.example` to `app2-fiat-settlement/.env` and fill in the real `APP1_RELEASE_API_KEY` — это тот же ключ, что в `RELEASE_API_KEY` у App 1 (смотри `E:\near_project\app1-crypto-treasury\backend\.env`).
+Copy `.env.example` to `app2-fiat-settlement/.env` and fill in the real `APP1_RELEASE_API_KEY` — this is the same key as `RELEASE_API_KEY` in App 1 (see `E:\near_project\app1-crypto-treasury\backend\.env`).
 
 ```
 PORT=3001
 APP1_URL=http://localhost:3000
-APP1_RELEASE_API_KEY=<скопируй значение RELEASE_API_KEY из App 1>
+APP1_RELEASE_API_KEY=<copy RELEASE_API_KEY value from App 1>
 DB_PATH=./data/app2.db
 ```
 
@@ -140,6 +141,7 @@ Expected: `node_modules` created, no errors.
 ## Task 2: Database Module (TDD)
 
 **Files:**
+
 - Create: `backend/src/db.js`
 - Create: `backend/tests/db.test.js`
 
@@ -410,6 +412,7 @@ git commit -m "feat: app2 scaffold + db module (6 tests)"
 ## Task 3: Payment Module (TDD)
 
 **Files:**
+
 - Create: `backend/src/payment.js`
 - Create: `backend/tests/payment.test.js`
 
@@ -560,6 +563,7 @@ git commit -m "feat: payment module — mock provider + App 1 release (5 tests)"
 ## Task 4: Scheduler Module (TDD)
 
 **Files:**
+
 - Create: `backend/src/scheduler.js`
 - Create: `backend/tests/scheduler.test.js`
 
@@ -712,6 +716,7 @@ git commit -m "feat: scheduler module — cron-based auto payments (4 tests)"
 ## Task 5: Express API (TDD)
 
 **Files:**
+
 - Create: `backend/src/index.js`
 - Create: `backend/tests/api.test.js`
 
@@ -1043,6 +1048,7 @@ git commit -m "feat: express API — 11 endpoints, all 23 tests passing"
 ## Task 6: Dashboard HTML
 
 **Files:**
+
 - Create: `backend/public/index.html`
 
 - [ ] **Step 1: Create `backend/public/index.html`**
@@ -1180,6 +1186,7 @@ git commit -m "feat: dashboard HTML — stats and recent payments"
 ## Task 7: Schools HTML
 
 **Files:**
+
 - Create: `backend/public/schools.html`
 
 - [ ] **Step 1: Create `backend/public/schools.html`**
@@ -1320,6 +1327,7 @@ git commit -m "feat: schools HTML — add/list/delete schools"
 ## Task 8: Payments HTML
 
 **Files:**
+
 - Create: `backend/public/payments.html`
 
 - [ ] **Step 1: Create `backend/public/payments.html`**
@@ -1487,6 +1495,7 @@ git commit -m "feat: payments HTML — create, confirm, history"
 ## Task 9: Schedules HTML
 
 **Files:**
+
 - Create: `backend/public/schedules.html`
 
 - [ ] **Step 1: Create `backend/public/schedules.html`**
@@ -1661,9 +1670,9 @@ git commit -m "feat: schedules HTML — create/pause/delete recurring payments"
 
 ## Task 10: E2E Manual Test
 
-**Цель:** проверить полный цикл: школа → выплата с App 1 ID → подтверждение → App 1 получает сигнал.
+**Goal:** verify the full cycle: school → payment with App 1 ID → confirmation → App 1 receives signal.
 
-- [ ] **Step 1: Убедись что App 1 запущен**
+- [ ] **Step 1: Make sure App 1 is running**
 
 ```powershell
 cd E:\near_project\app1-crypto-treasury\backend
@@ -1671,7 +1680,7 @@ npm start
 # → App 1 Crypto Treasury running on port 3000
 ```
 
-- [ ] **Step 2: Запусти App 2**
+- [ ] **Step 2: Start App 2**
 
 ```powershell
 cd E:\near_project\app2-fiat-settlement\backend
@@ -1679,11 +1688,11 @@ npm start
 # → App 2 Fiat Settlement running on port 3001
 ```
 
-- [ ] **Step 3: Добавь школу**
+- [ ] **Step 3: Add a school**
 
-Открой `http://localhost:3001/schools.html`, добавь школу "Тест Школа" с валютой USD.
+Open `http://localhost:3001/schools.html`, add a school "Test School" with currency USD.
 
-- [ ] **Step 4: Создай платёж в App 1**
+- [ ] **Step 4: Create a payment in App 1**
 
 ```powershell
 curl -X POST http://localhost:3000/api/lock `
@@ -1693,20 +1702,21 @@ curl -X POST http://localhost:3000/api/lock `
 
 Expected: `{"success":true,"paymentId":"e2e_001"}`
 
-- [ ] **Step 5: Создай выплату в App 2**
+- [ ] **Step 5: Create a payment in App 2**
 
-Открой `http://localhost:3001/payments.html`, создай выплату:
-- Школа: Тест Школа
-- Сумма: 100 USD
-- Payment ID из App 1: `e2e_001`
+Open `http://localhost:3001/payments.html`, create a payment:
 
-- [ ] **Step 6: Подтверди выплату**
+- School: Test School
+- Amount: 100 USD
+- Payment ID from App 1: `e2e_001`
 
-Нажми кнопку "✓ Отправить" рядом с созданным платежом.
+- [ ] **Step 6: Confirm the payment**
 
-Expected: статус меняется на `sent`. Если App 1 доступен — `app1_released: 1`. Если App 1 недоступен — появляется предупреждение, но статус всё равно `sent`.
+Click the "✓ Send" button next to the created payment.
 
-- [ ] **Step 7: Проверь статус в App 1**
+Expected: status changes to `sent`. If App 1 is available — `app1_released: 1`. If App 1 is unavailable — a warning appears, but status is still `sent`.
+
+- [ ] **Step 7: Check status in App 1**
 
 ```powershell
 curl http://localhost:3000/api/payments/e2e_001
@@ -1714,7 +1724,7 @@ curl http://localhost:3000/api/payments/e2e_001
 
 Expected: `{"payment_id":"e2e_001","status":"Released",...}`
 
-- [ ] **Step 8: Финальный коммит**
+- [ ] **Step 8: Final commit**
 
 ```powershell
 cd E:\near_project
@@ -1724,16 +1734,16 @@ git commit -m "feat: app2 complete — E2E test passed"
 
 ---
 
-## Итог
+## Summary
 
-| Task | Что строим | Тесты |
-|------|------------|-------|
+| Task | What we build | Tests |
+|------|--------------|-------|
 | 1 | Scaffold | — |
 | 2 | db.js | 6 ✅ |
 | 3 | payment.js | 5 ✅ |
 | 4 | scheduler.js | 4 ✅ |
 | 5 | index.js (API) | 8 ✅ |
-| 6–9 | HTML страницы | manual ✅ |
-| 10 | E2E тест | manual ✅ |
+| 6–9 | HTML pages | manual ✅ |
+| 10 | E2E test | manual ✅ |
 
-**Итого: 23 unit-теста + E2E**
+**Total: 23 unit tests + E2E**

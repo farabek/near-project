@@ -33,7 +33,7 @@ function requireApiKey(req, res, next) {
 }
 
 // ─── GET /api/balance ────────────────────────────────────────────────────────
-// Возвращает NEAR баланс аккаунта
+// Returns NEAR and USDC account balance
 app.get('/api/balance', async (req, res) => {
   try {
     const [near, usdc] = await Promise.all([
@@ -47,7 +47,7 @@ app.get('/api/balance', async (req, res) => {
 });
 
 // ─── POST /api/swap ──────────────────────────────────────────────────────────
-// Конвертирует NEAR → USDC через Ref Finance
+// Converts NEAR → USDC via Ref Finance
 // Body: { amountNEAR: "1.5", minAmountOut: "0" }
 app.post('/api/swap', requireApiKey, async (req, res) => {
   const { amountNEAR, minAmountOut } = req.body;
@@ -66,7 +66,7 @@ app.post('/api/swap', requireApiKey, async (req, res) => {
 });
 
 // ─── POST /api/lock ──────────────────────────────────────────────────────────
-// Блокирует USDC в эскроу-контракте
+// Locks USDC in the escrow contract
 // Body: { paymentId: "pay_001", amountUsdc: 100000000 }
 app.post('/api/lock', requireApiKey, async (req, res) => {
   const { paymentId, amountUsdc } = req.body;
@@ -83,7 +83,7 @@ app.post('/api/lock', requireApiKey, async (req, res) => {
 });
 
 // ─── POST /api/release ───────────────────────────────────────────────────────
-// Разблокирует USDC — вызывается из App 2 после подтверждения выплаты школе
+// Releases USDC — called by App 2 after school payment confirmation
 // Body: { paymentId: "pay_001" }
 // Header: x-api-key: <RELEASE_API_KEY>
 app.post('/api/release', requireApiKey, async (req, res) => {
@@ -101,7 +101,7 @@ app.post('/api/release', requireApiKey, async (req, res) => {
 });
 
 // ─── GET /api/payments ───────────────────────────────────────────────────────
-// Возвращает историю всех платежей
+// Returns payment history
 app.get('/api/payments', async (req, res) => {
   try {
     const payments = await getAllPayments(account, config.contractId);
@@ -112,7 +112,7 @@ app.get('/api/payments', async (req, res) => {
 });
 
 // ─── GET /api/payments/:id ───────────────────────────────────────────────────
-// Возвращает один платёж по ID
+// Returns a single payment by ID
 app.get('/api/payments/:id', async (req, res) => {
   try {
     const payment = await getPayment(account, config.contractId, req.params.id);
@@ -125,7 +125,7 @@ app.get('/api/payments/:id', async (req, res) => {
   }
 });
 
-// ─── Start server (только при прямом запуске, не при тестах) ─────────────────
+// ─── Start server (only on direct run, not when required by tests) ───────────
 if (require.main === module) {
   initAccount().then(() => {
     app.listen(config.port, () => {

@@ -1,11 +1,11 @@
 const GAS = '30000000000000'; // 30 TGas
 
 /**
- * Блокирует USDC в эскроу-контракте.
+ * Locks USDC in the escrow contract.
  * @param {Account} account
  * @param {string} contractId
  * @param {string} paymentId
- * @param {number} amountUsdc  — сумма в минимальных единицах USDC (6 знаков)
+ * @param {number} amountUsdc  — amount in smallest USDC units (6 decimals)
  */
 async function lockFunds(account, contractId, paymentId, amountUsdc) {
   return account.functionCall({
@@ -18,7 +18,7 @@ async function lockFunds(account, contractId, paymentId, amountUsdc) {
 }
 
 /**
- * Разблокирует USDC. Вызывать только после подтверждения от App 2.
+ * Releases USDC. Call only after receiving confirmation from App 2.
  * @param {Account} account
  * @param {string} contractId
  * @param {string} paymentId

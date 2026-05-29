@@ -2,19 +2,19 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Исправить все проблемы из аудита AUDIT-2026-05-28.md — 3 критических, 5 высоких, 7 средних, 6 низких.
+**Goal:** Fix all issues from AUDIT-2026-05-28.md — 3 critical, 5 high, 7 medium, 6 low.
 
-**Architecture:** Правки разбиты по приоритету (критические → высокие → средние → низкие). Каждая задача независима, кроме Task 5 (зависит от Task 2 config) и Task 6 (зависит от Task 4). Подход TDD: сначала тест, потом код.
+**Architecture:** Fixes are ordered by priority (critical → high → medium → low). Each task is independent except Task 5 (depends on Task 2 config) and Task 6 (depends on Task 4). TDD approach: write test first, then implementation.
 
 **Tech Stack:** Node.js 20+, Express 4, better-sqlite3, Jest/supertest, helmet, express-rate-limit, cors
 
 ---
 
-## Файлы изменений
+## Changed Files
 
-| Файл | Задачи |
-|------|--------|
-| `.gitignore` (корень) | Task 1 |
+| File | Tasks |
+|------|-------|
+| `.gitignore` (root) | Task 1 |
 | `app2-fiat-settlement/.gitignore` | Task 1 |
 | `app1-crypto-treasury/backend/.env.example` | Task 1 |
 | `app2-fiat-settlement/backend/.env.example` | Task 1, Task 2 |
@@ -38,19 +38,20 @@
 
 ---
 
-## Task 1: Gitignore и env.example (C-1 частично, H-4, M-4)
+## Task 1: Gitignore and env.example (C-1 partial, H-4, M-4)
 
 **Files:**
-- Modify: `.gitignore` (корень проекта)
+
+- Modify: `.gitignore` (project root)
 - Modify: `app2-fiat-settlement/.gitignore`
 - Modify: `app1-crypto-treasury/backend/.env.example`
 - Modify: `app2-fiat-settlement/backend/.env.example`
 
-> Нет тестов — это файлы конфигурации. Сначала делаем изменения, потом проверяем git status.
+> No tests — these are config files. Make changes first, then verify git status.
 
-- [ ] **Step 1: Добавить `**/.env` в корневой .gitignore**
+- [ ] **Step 1: Add `**/.env` to root .gitignore**
 
-Открыть `E:\near_project\.gitignore`, добавить строки:
+Open `E:\near_project\.gitignore`, add lines:
 
 ```
 .claude/
@@ -66,9 +67,9 @@ data/*.db-shm
 data/*.db-wal
 ```
 
-- [ ] **Step 2: Обновить app2 .gitignore**
+- [ ] **Step 2: Update app2 .gitignore**
 
-Открыть `E:\near_project\app2-fiat-settlement\.gitignore`, добавить:
+Open `E:\near_project\app2-fiat-settlement\.gitignore`, add:
 
 ```
 .env
@@ -77,14 +78,14 @@ data/*.db-shm
 data/*.db-wal
 ```
 
-- [ ] **Step 3: Добавить RELEASE_API_KEY в App 1 .env.example**
+- [ ] **Step 3: Add RELEASE_API_KEY to App 1 .env.example**
 
-Открыть `E:\near_project\app1-crypto-treasury\backend\.env.example`, итоговое содержимое:
+Open `E:\near_project\app1-crypto-treasury\backend\.env.example`, final content:
 
 ```
 # NEAR Testnet credentials
-# Скопируй этот файл в .env и заполни реальными значениями
-# НЕ коммить .env в git!
+# Copy this file to .env and fill in real values
+# DO NOT commit .env to git!
 
 NEAR_ACCOUNT_ID=yourname.testnet
 NEAR_PRIVATE_KEY=ed25519:YOUR_PRIVATE_KEY_HERE
@@ -94,9 +95,9 @@ PORT=3000
 RELEASE_API_KEY=your_strong_secret_key_here
 ```
 
-- [ ] **Step 4: Добавить ADMIN_API_KEY в App 2 .env.example**
+- [ ] **Step 4: Add ADMIN_API_KEY to App 2 .env.example**
 
-Открыть `E:\near_project\app2-fiat-settlement\backend\.env.example`, итоговое содержимое:
+Open `E:\near_project\app2-fiat-settlement\backend\.env.example`, final content:
 
 ```
 PORT=3001
@@ -106,16 +107,17 @@ ADMIN_API_KEY=your_strong_admin_key_here
 DB_PATH=./data/app2.db
 ```
 
-- [ ] **Step 5: Убедиться, что .env не попал в git**
+- [ ] **Step 5: Ensure .env is not tracked by git**
 
 ```bash
 cd E:\near_project
 git status
 ```
 
-Ожидаемый результат: файлы `app1-crypto-treasury/backend/.env` и `app2-fiat-settlement/.env` НЕ должны быть перечислены в `Changes not staged` или `Untracked files` после изменения .gitignore.
+Expected: `app1-crypto-treasury/backend/.env` and `app2-fiat-settlement/.env` should NOT appear under `Changes not staged` or `Untracked files` after updating .gitignore.
 
-Если .env уже отслеживается git:
+If .env is already tracked by git:
+
 ```bash
 git rm --cached app1-crypto-treasury/backend/.env
 git rm --cached app2-fiat-settlement/.env
@@ -128,33 +130,35 @@ git add .gitignore app2-fiat-settlement/.gitignore app1-crypto-treasury/backend/
 git commit -m "security: protect .env files from git, fix env.example templates"
 ```
 
-> **⚠️ ВАЖНО: Ротация приватного ключа (C-1)**
-> После завершения всех задач, выполни команду:
+> **⚠️ IMPORTANT: Private key rotation (C-1)**
+> After completing all tasks, run:
+>
 > ```
 > near generate-key farab.testnet --networkId testnet
 > ```
-> Это создаст новый ключ в `~/.near-credentials/testnet/farab.testnet.json`.
-> Скопируй новый `private_key` в `.env`. Старый ключ (из AUDIT-2026-05-28.md) считается скомпрометированным.
+>
+> This creates a new key in `~/.near-credentials/testnet/farab.testnet.json`.
+> Copy the new `private_key` to `.env`. The old key (from AUDIT-2026-05-28.md) is considered compromised.
 
 ---
 
-## Task 2: Аутентификация App 2 API (C-2)
+## Task 2: App 2 API Authentication (C-2)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/config.js`
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 - Modify: `app2-fiat-settlement/backend/tests/api.test.js`
 
-- [ ] **Step 1: Написать тест на 401 без API key**
+- [ ] **Step 1: Write test for 401 without API key**
 
-В файле `app2-fiat-settlement/backend/tests/api.test.js`, добавить ПЕРЕД всеми describe-блоками:
+In `app2-fiat-settlement/backend/tests/api.test.js`, add at the very top alongside other process.env lines:
 
 ```js
-// Добавить в самое начало файла вместе с другими process.env:
 process.env.ADMIN_API_KEY = 'test-admin-key';
 ```
 
-Добавить новый describe-блок в начало тестов (после beforeAll):
+Add a new describe block at the start of tests (after beforeAll):
 
 ```js
 describe('Authentication middleware', () => {
@@ -184,18 +188,18 @@ describe('Authentication middleware', () => {
 });
 ```
 
-- [ ] **Step 2: Запустить тест — убедиться что ПАДАЕТ**
+- [ ] **Step 2: Run test — confirm it FAILS**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test -- --testPathPattern=api.test
 ```
 
-Ожидаемый результат: тесты `Authentication middleware` FAIL (сейчас возвращается 400/201, а не 401).
+Expected: `Authentication middleware` tests FAIL (currently return 400/201, not 401).
 
-- [ ] **Step 3: Добавить adminApiKey в config.js**
+- [ ] **Step 3: Add adminApiKey to config.js**
 
-Открыть `app2-fiat-settlement/backend/src/config.js`, итоговое содержимое:
+Open `app2-fiat-settlement/backend/src/config.js`, final content:
 
 ```js
 require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
@@ -220,9 +224,9 @@ function validateConfig() {
 module.exports = { config, validateConfig };
 ```
 
-- [ ] **Step 4: Добавить requireAuth middleware в index.js**
+- [ ] **Step 4: Add requireAuth middleware to index.js**
 
-В файле `app2-fiat-settlement/backend/src/index.js`, добавить ПОСЛЕ строки `let db;`:
+In `app2-fiat-settlement/backend/src/index.js`, add AFTER the `let db;` line:
 
 ```js
 function requireAuth(req, res, next) {
@@ -234,12 +238,12 @@ function requireAuth(req, res, next) {
 }
 ```
 
-- [ ] **Step 5: Применить requireAuth ко всем мутирующим эндпоинтам**
+- [ ] **Step 5: Apply requireAuth to all mutating endpoints**
 
-В `app2-fiat-settlement/backend/src/index.js` заменить сигнатуры роутов:
+In `app2-fiat-settlement/backend/src/index.js` replace route signatures:
 
 ```js
-// БЫЛО:
+// BEFORE:
 app.post('/api/schools', (req, res) => {
 app.put('/api/schools/:id', (req, res) => {
 app.delete('/api/schools/:id', (req, res) => {
@@ -249,7 +253,7 @@ app.post('/api/schedules', (req, res) => {
 app.patch('/api/schedules/:id', (req, res) => {
 app.delete('/api/schedules/:id', (req, res) => {
 
-// СТАЛО:
+// AFTER:
 app.post('/api/schools', requireAuth, (req, res) => {
 app.put('/api/schools/:id', requireAuth, (req, res) => {
 app.delete('/api/schools/:id', requireAuth, (req, res) => {
@@ -260,15 +264,15 @@ app.patch('/api/schedules/:id', requireAuth, (req, res) => {
 app.delete('/api/schedules/:id', requireAuth, (req, res) => {
 ```
 
-- [ ] **Step 6: Обновить api.test.js — добавить API key во все мутирующие запросы**
+- [ ] **Step 6: Update api.test.js — add API key to all mutating requests**
 
-Открыть `app2-fiat-settlement/backend/tests/api.test.js`. Добавить константу после `let app;`:
+Open `app2-fiat-settlement/backend/tests/api.test.js`. Add constant after `let app;`:
 
 ```js
 const ADMIN_KEY = 'test-admin-key';
 ```
 
-Затем найти все запросы `request(app).post(...)`, `.put(...)`, `.patch(...)`, `.delete(...)` и добавить `.set('x-api-key', ADMIN_KEY)`. Итоговый файл:
+Then find all `request(app).post(...)`, `.put(...)`, `.patch(...)`, `.delete(...)` requests and add `.set('x-api-key', ADMIN_KEY)`. Final file:
 
 ```js
 // Must set env before requiring any module that reads config
@@ -498,14 +502,14 @@ describe('Schedules API', () => {
 });
 ```
 
-- [ ] **Step 7: Запустить тесты App 2 — убедиться что ВСЕ проходят**
+- [ ] **Step 7: Run App 2 tests — confirm ALL pass**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS (включая новые 4 auth теста).
+Expected: all tests PASS (including the 4 new auth tests).
 
 - [ ] **Step 8: Commit**
 
@@ -516,19 +520,20 @@ git commit -m "security: add API key authentication to App 2 endpoints"
 
 ---
 
-## Task 3: XSS защита в HTML (C-3)
+## Task 3: XSS Protection in HTML (C-3)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/public/index.html`
 - Modify: `app2-fiat-settlement/backend/public/payments.html`
 - Modify: `app2-fiat-settlement/backend/public/schools.html`
 - Modify: `app2-fiat-settlement/backend/public/schedules.html`
 
-> XSS в HTML тестируется вручную (браузер), не через Jest. Тест: создать школу с именем `<b>bold</b>` — в таблице должен появиться текст буквально `<b>bold</b>`, а не жирный текст.
+> XSS in HTML is tested manually (browser), not via Jest. Test: create a school named `<b>bold</b>` — the table should show the literal text `<b>bold</b>`, not bold text.
 
-- [ ] **Step 1: Добавить escapeHtml в index.html**
+- [ ] **Step 1: Add escapeHtml to index.html**
 
-В файле `app2-fiat-settlement/backend/public/index.html`, найти тег `<script>` и добавить функцию в самое начало скрипта:
+In `app2-fiat-settlement/backend/public/index.html`, find the `<script>` tag and add the function at the very start of the script:
 
 ```js
 function escapeHtml(str) {
@@ -536,7 +541,8 @@ function escapeHtml(str) {
 }
 ```
 
-Затем исправить строки с innerHTML. Было:
+Then fix innerHTML lines. Before:
+
 ```js
 const rows = paymentsRes.slice(0, 10).map(p => `
   <tr>
@@ -548,7 +554,8 @@ const rows = paymentsRes.slice(0, 10).map(p => `
 `).join('');
 ```
 
-Стало:
+After:
+
 ```js
 const rows = paymentsRes.slice(0, 10).map(p => `
   <tr>
@@ -560,9 +567,9 @@ const rows = paymentsRes.slice(0, 10).map(p => `
 `).join('');
 ```
 
-- [ ] **Step 2: Добавить escapeHtml в payments.html**
+- [ ] **Step 2: Add escapeHtml to payments.html**
 
-Найти тег `<script>`, добавить функцию в начало:
+Find the `<script>` tag, add the function at the start:
 
 ```js
 function escapeHtml(str) {
@@ -570,16 +577,20 @@ function escapeHtml(str) {
 }
 ```
 
-Исправить строку с `select.innerHTML` — было:
+Fix the `select.innerHTML` line. Before:
+
 ```js
 select.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 ```
-Стало:
+
+After:
+
 ```js
 select.innerHTML = schools.map(s => `<option value="${escapeHtml(String(s.id))}">${escapeHtml(s.name)}</option>`).join('');
 ```
 
-Исправить строки с `paymentsTable.innerHTML` — было:
+Fix the `paymentsTable.innerHTML` lines. Before:
+
 ```js
 const rows = payments.map(p => `
   <tr>
@@ -588,11 +599,13 @@ const rows = payments.map(p => `
     <td style="font-family:monospace;font-size:12px;color:#64748b">${p.app1_payment_id || '—'}</td>
     <td><span class="badge ${p.status}">${p.status}</span></td>
     <td>${p.created_at.slice(0, 10)}</td>
-    <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${p.id})">✓ Отправить</button>` : ''}</td>
+    <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${p.id})">✓ Send</button>` : ''}</td>
   </tr>
 `).join('');
 ```
-Стало:
+
+After:
+
 ```js
 const rows = payments.map(p => `
   <tr>
@@ -601,14 +614,14 @@ const rows = payments.map(p => `
     <td style="font-family:monospace;font-size:12px;color:#64748b">${escapeHtml(p.app1_payment_id || '—')}</td>
     <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
     <td>${escapeHtml(p.created_at.slice(0, 10))}</td>
-    <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${Number(p.id)})">✓ Отправить</button>` : ''}</td>
+    <td>${p.status === 'pending' ? `<button class="btn-confirm" onclick="confirmPayment(${Number(p.id)})">✓ Send</button>` : ''}</td>
   </tr>
 `).join('');
 ```
 
-- [ ] **Step 3: Добавить escapeHtml в schools.html**
+- [ ] **Step 3: Add escapeHtml to schools.html**
 
-Найти тег `<script>`, добавить:
+Find the `<script>` tag, add:
 
 ```js
 function escapeHtml(str) {
@@ -616,45 +629,51 @@ function escapeHtml(str) {
 }
 ```
 
-Исправить `schoolsTable.innerHTML`. Было:
+Fix `schoolsTable.innerHTML`. Before:
+
 ```js
 const rows = schools.map(s => `
   <tr>
     <td>${s.name}</td>
     <td>${s.currency}</td>
     <td style="color:#64748b;font-size:13px">${s.bank_details || '—'}</td>
-    <td><button class="btn-danger" onclick="deleteSchool(${s.id}, '${s.name.replace(/'/g, "\\'")}')">Удалить</button></td>
+    <td><button class="btn-danger" onclick="deleteSchool(${s.id}, '${s.name.replace(/'/g, "\\'")}')">Delete</button></td>
   </tr>
 `).join('');
 ```
-Стало:
+
+After:
+
 ```js
 const rows = schools.map(s => `
   <tr>
     <td>${escapeHtml(s.name)}</td>
     <td>${escapeHtml(s.currency)}</td>
     <td style="color:#64748b;font-size:13px">${escapeHtml(s.bank_details || '—')}</td>
-    <td><button class="btn-danger" onclick="deleteSchool(${Number(s.id)})">Удалить</button></td>
+    <td><button class="btn-danger" onclick="deleteSchool(${Number(s.id)})">Delete</button></td>
   </tr>
 `).join('');
 ```
 
-Обратить внимание: передача имени в `onclick` через строку сама по себе XSS-вектор, поэтому убираем имя из параметра. Функцию `deleteSchool` поменять:
+Note: passing the name in `onclick` via a string is itself an XSS vector, so remove the name from the parameter. Update `deleteSchool`:
 
-Было:
+Before:
+
 ```js
 async function deleteSchool(id, name) {
-  if (!confirm(`Удалить "${name}"?`)) return;
+  if (!confirm(`Delete "${name}"?`)) return;
 ```
-Стало:
+
+After:
+
 ```js
 async function deleteSchool(id) {
-  if (!confirm('Удалить эту школу?')) return;
+  if (!confirm('Delete this school?')) return;
 ```
 
-- [ ] **Step 4: Добавить escapeHtml в schedules.html**
+- [ ] **Step 4: Add escapeHtml to schedules.html**
 
-Найти тег `<script>`, добавить:
+Find the `<script>` tag, add:
 
 ```js
 function escapeHtml(str) {
@@ -662,41 +681,47 @@ function escapeHtml(str) {
 }
 ```
 
-Исправить `select.innerHTML` — было:
+Fix `select.innerHTML`. Before:
+
 ```js
 select.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 ```
-Стало:
+
+After:
+
 ```js
 select.innerHTML = schools.map(s => `<option value="${escapeHtml(String(s.id))}">${escapeHtml(s.name)}</option>`).join('');
 ```
 
-Исправить `schedulesTable.innerHTML` — было:
+Fix `schedulesTable.innerHTML`. Before:
+
 ```js
 const rows = schedules.map(s => `
   <tr>
     <td>${schoolMap[s.school_id] || '—'}</td>
     <td>${s.amount} ${s.currency}</td>
     <td style="font-family:monospace;font-size:12px">${s.cron_expr}</td>
-    <td><span class="badge ${s.active ? 'active' : 'paused'}">${s.active ? '● активно' : '○ пауза'}</span></td>
+    <td><span class="badge ${s.active ? 'active' : 'paused'}">${s.active ? '● active' : '○ paused'}</span></td>
     <td>
-      <button class="btn-sm" onclick="toggleSchedule(${s.id}, ${s.active ? 0 : 1})">${s.active ? 'Пауза' : 'Запустить'}</button>
-      <button class="btn-sm btn-danger" onclick="deleteSchedule(${s.id})">Удалить</button>
+      <button class="btn-sm" onclick="toggleSchedule(${s.id}, ${s.active ? 0 : 1})">${s.active ? 'Pause' : 'Resume'}</button>
+      <button class="btn-sm btn-danger" onclick="deleteSchedule(${s.id})">Delete</button>
     </td>
   </tr>
 `).join('');
 ```
-Стало:
+
+After:
+
 ```js
 const rows = schedules.map(s => `
   <tr>
     <td>${escapeHtml(schoolMap[s.school_id]) || '—'}</td>
     <td>${escapeHtml(String(s.amount))} ${escapeHtml(s.currency)}</td>
     <td style="font-family:monospace;font-size:12px">${escapeHtml(s.cron_expr)}</td>
-    <td><span class="badge ${s.active ? 'active' : 'paused'}">${s.active ? '● активно' : '○ пауза'}</span></td>
+    <td><span class="badge ${s.active ? 'active' : 'paused'}">${s.active ? '● active' : '○ paused'}</span></td>
     <td>
-      <button class="btn-sm" onclick="toggleSchedule(${Number(s.id)}, ${s.active ? 0 : 1})">${s.active ? 'Пауза' : 'Запустить'}</button>
-      <button class="btn-sm btn-danger" onclick="deleteSchedule(${Number(s.id)})">Удалить</button>
+      <button class="btn-sm" onclick="toggleSchedule(${Number(s.id)}, ${s.active ? 0 : 1})">${s.active ? 'Pause' : 'Resume'}</button>
+      <button class="btn-sm btn-danger" onclick="deleteSchedule(${Number(s.id)})">Delete</button>
     </td>
   </tr>
 `).join('');
@@ -711,26 +736,28 @@ git commit -m "security: fix XSS vulnerabilities in HTML dashboard templates"
 
 ---
 
-## Task 4: Race condition при подтверждении выплаты (H-2)
+## Task 4: Race Condition on Payment Confirmation (H-2)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 
-- [ ] **Step 1: Написать тест (уже существует в api.test.js)**
+- [ ] **Step 1: Verify test already exists in api.test.js**
 
-Тест `returns 400 on double confirm` уже существует. Он проверяет что второй confirm вернёт 400. После наших изменений сообщение об ошибке изменится с `already sent` на `already sent or in progress`. Проверить:
+The `returns 400 on double confirm` test already exists. It checks that the second confirm returns 400. After our changes, the error message changes from `already sent` to `already sent or in progress`. Verify:
 
 ```bash
 grep -n "already sent" app2-fiat-settlement/backend/tests/api.test.js
 ```
 
-Тест использует `/already sent/i`, что совпадёт с новым сообщением `Payment already sent or in progress`. Менять тест не нужно.
+The test uses `/already sent/i`, which matches the new message `Payment already sent or in progress`. No need to update the test.
 
-- [ ] **Step 2: Реализовать атомарный UPDATE**
+- [ ] **Step 2: Implement atomic UPDATE**
 
-В файле `app2-fiat-settlement/backend/src/index.js`, найти обработчик `POST /api/payments/:id/confirm` и заменить начало функции:
+In `app2-fiat-settlement/backend/src/index.js`, find `POST /api/payments/:id/confirm` handler and replace the beginning:
 
-Было (строки 89-92):
+Before (lines 89-92):
+
 ```js
 app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   const payment = getPayment(db, req.params.id);
@@ -738,7 +765,8 @@ app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   if (payment.status === 'sent') return res.status(400).json({ error: 'Payment already sent' });
 ```
 
-Стало:
+After:
+
 ```js
 app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   const payment = getPayment(db, req.params.id);
@@ -752,14 +780,14 @@ app.post('/api/payments/:id/confirm', requireAuth, async (req, res) => {
   }
 ```
 
-- [ ] **Step 3: Запустить тесты App 2**
+- [ ] **Step 3: Run App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 4: Commit**
 
@@ -770,17 +798,18 @@ git commit -m "fix: prevent double payment confirmation via atomic status update
 
 ---
 
-## Task 5: Scheduler вызывает App 1 release (H-3)
+## Task 5: Scheduler Calls App 1 Release (H-3)
 
 **Files:**
-- Modify: `app2-fiat-settlement/backend/src/db.js` (добавить app1_payment_id в schedules)
-- Modify: `app2-fiat-settlement/backend/src/index.js` (обновить POST /api/schedules)
-- Modify: `app2-fiat-settlement/backend/src/scheduler.js` (вызов releaseApp1)
+
+- Modify: `app2-fiat-settlement/backend/src/db.js` (add app1_payment_id to schedules)
+- Modify: `app2-fiat-settlement/backend/src/index.js` (update POST /api/schedules)
+- Modify: `app2-fiat-settlement/backend/src/scheduler.js` (call releaseApp1)
 - Modify: `app2-fiat-settlement/backend/tests/scheduler.test.js`
 
-- [ ] **Step 1: Написать тест для scheduler с app1_payment_id**
+- [ ] **Step 1: Write test for scheduler with app1_payment_id**
 
-В файле `app2-fiat-settlement/backend/tests/scheduler.test.js`, добавить новый describe-блок:
+In `app2-fiat-settlement/backend/tests/scheduler.test.js`, add a new describe block:
 
 ```js
 const { mockSendPayment, releaseApp1 } = require('../src/payment');
@@ -820,20 +849,20 @@ describe('runScheduledPayment with app1_payment_id', () => {
 });
 ```
 
-> **Важно:** блок `jest.mock('../src/payment', ...)` нужно поставить в самое начало файла (после импортов, но до describe-блоков) — Jest hoisting требует этого.
+> **Important:** The `jest.mock('../src/payment', ...)` block must be placed at the very top of the file (after imports, before describe blocks) — Jest hoisting requires this.
 
-- [ ] **Step 2: Запустить тест — убедиться что ПАДАЕТ**
+- [ ] **Step 2: Run test — confirm it FAILS**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test -- --testPathPattern=scheduler.test
 ```
 
-Ожидаемый результат: новые тесты FAIL.
+Expected: new tests FAIL.
 
-- [ ] **Step 3: Добавить app1_payment_id в таблицу schedules**
+- [ ] **Step 3: Add app1_payment_id to schedules table**
 
-В файле `app2-fiat-settlement/backend/src/db.js`, найти CREATE TABLE schedules и добавить колонку:
+In `app2-fiat-settlement/backend/src/db.js`, find CREATE TABLE schedules and add column:
 
 ```sql
 CREATE TABLE IF NOT EXISTS schedules (
@@ -848,9 +877,10 @@ CREATE TABLE IF NOT EXISTS schedules (
 );
 ```
 
-В функции `createSchedule`:
+In the `createSchedule` function:
 
-Было:
+Before:
+
 ```js
 function createSchedule(db, { school_id, amount, currency = 'USD', cron_expr }) {
   const result = db.prepare(
@@ -858,7 +888,8 @@ function createSchedule(db, { school_id, amount, currency = 'USD', cron_expr }) 
   ).run(school_id, amount, currency, cron_expr);
 ```
 
-Стало:
+After:
+
 ```js
 function createSchedule(db, { school_id, app1_payment_id, amount, currency = 'USD', cron_expr }) {
   const result = db.prepare(
@@ -866,35 +897,41 @@ function createSchedule(db, { school_id, app1_payment_id, amount, currency = 'US
   ).run(school_id, app1_payment_id || null, amount, currency, cron_expr);
 ```
 
-В `module.exports` ничего менять не нужно.
+No changes needed in `module.exports`.
 
-- [ ] **Step 4: Обновить POST /api/schedules в index.js**
+- [ ] **Step 4: Update POST /api/schedules in index.js**
 
-В `app2-fiat-settlement/backend/src/index.js`, найти `app.post('/api/schedules', ...)`:
+In `app2-fiat-settlement/backend/src/index.js`, find `app.post('/api/schedules', ...)`:
 
-Было:
+Before:
+
 ```js
 const { school_id, amount, currency, cron_expr } = req.body;
 ```
-Стало:
+
+After:
+
 ```js
 const { school_id, app1_payment_id, amount, currency, cron_expr } = req.body;
 ```
 
-И в вызове createSchedule:
+And in the createSchedule call:
 
-Было:
+Before:
+
 ```js
 const schedule = createSchedule(db, { school_id, amount, currency, cron_expr });
 ```
-Стало:
+
+After:
+
 ```js
 const schedule = createSchedule(db, { school_id, app1_payment_id, amount, currency, cron_expr });
 ```
 
-- [ ] **Step 5: Обновить scheduler.js — добавить вызов releaseApp1**
+- [ ] **Step 5: Update scheduler.js — add releaseApp1 call**
 
-Открыть `app2-fiat-settlement/backend/src/scheduler.js`, итоговое содержимое:
+Open `app2-fiat-settlement/backend/src/scheduler.js`, final content:
 
 ```js
 const cron = require('node-cron');
@@ -969,9 +1006,9 @@ async function runScheduledPayment(db, config, schedule) {
 module.exports = { startScheduler, registerSchedule, unregisterSchedule, stopAllSchedules, runScheduledPayment };
 ```
 
-- [ ] **Step 6: Обновить scheduler.test.js с правильной структурой jest.mock**
+- [ ] **Step 6: Update scheduler.test.js with correct jest.mock structure**
 
-Полный итоговый файл `app2-fiat-settlement/backend/tests/scheduler.test.js`:
+Full final file `app2-fiat-settlement/backend/tests/scheduler.test.js`:
 
 ```js
 jest.mock('../src/payment', () => ({
@@ -1077,14 +1114,14 @@ describe('registerSchedule / unregisterSchedule', () => {
 });
 ```
 
-- [ ] **Step 7: Запустить все тесты App 2**
+- [ ] **Step 7: Run all App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 8: Commit**
 
@@ -1095,45 +1132,50 @@ git commit -m "fix: scheduler now calls App 1 release when app1_payment_id is se
 
 ---
 
-## Task 6: INTEGER вместо REAL для денежных сумм (H-1)
+## Task 6: INTEGER instead of REAL for Monetary Amounts (H-1)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/db.js`
 
-> Суммы хранятся как целые числа (доллары/рубли без копеек). Если понадобятся копейки в будущем — хранить в центах (умножать/делить на 100). Для текущего testnet-демо достаточно целых чисел.
+> Amounts stored as whole numbers (dollars/units without fractions). If fractions are needed in the future — store in cents (multiply/divide by 100). Whole numbers are sufficient for the current testnet demo.
 
-- [ ] **Step 1: Изменить тип amount в схеме db.js**
+- [ ] **Step 1: Change amount type in db.js schema**
 
-В файле `app2-fiat-settlement/backend/src/db.js`, найти и заменить `amount REAL NOT NULL` в обоих местах (payments и schedules):
+In `app2-fiat-settlement/backend/src/db.js`, find and replace `amount REAL NOT NULL` in both places (payments and schedules):
 
-В таблице payments:
+In payments table:
+
 ```sql
--- БЫЛО:
+-- BEFORE:
 amount           REAL NOT NULL,
--- СТАЛО:
+-- AFTER:
 amount           INTEGER NOT NULL,
 ```
 
-В таблице schedules:
+In schedules table:
+
 ```sql
--- БЫЛО:
+-- BEFORE:
 amount     REAL NOT NULL,
--- СТАЛО:
+-- AFTER:
 amount     INTEGER NOT NULL,
 ```
 
-- [ ] **Step 2: Добавить валидацию целого числа в API (index.js)**
+- [ ] **Step 2: Add integer validation in API (index.js)**
 
-В `app2-fiat-settlement/backend/src/index.js`, найти POST /api/payments — проверку amount:
+In `app2-fiat-settlement/backend/src/index.js`, find POST /api/payments — amount check:
 
-Было:
+Before:
+
 ```js
 if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0) {
   return res.status(400).json({ error: 'school_id and amount (positive number) are required' });
 }
 ```
 
-Стало:
+After:
+
 ```js
 const parsedAmount = Number(amount);
 if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount)) {
@@ -1141,16 +1183,18 @@ if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || 
 }
 ```
 
-Аналогично для POST /api/schedules:
+Similarly for POST /api/schedules:
 
-Было:
+Before:
+
 ```js
 if (!school_id || amount == null || isNaN(Number(amount)) || Number(amount) <= 0 || !cron_expr) {
   return res.status(400).json({ error: 'school_id, amount (positive number), and cron_expr are required' });
 }
 ```
 
-Стало:
+After:
+
 ```js
 const parsedAmount = Number(amount);
 if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || !Number.isInteger(parsedAmount) || !cron_expr) {
@@ -1158,26 +1202,30 @@ if (!school_id || amount == null || isNaN(parsedAmount) || parsedAmount <= 0 || 
 }
 ```
 
-- [ ] **Step 3: Удалить существующую БД (данные testnet не нужны)**
+- [ ] **Step 3: Delete existing DB (testnet data not needed)**
 
 ```bash
 del "E:\near_project\app2-fiat-settlement\backend\data\app2.db"
 ```
 
-- [ ] **Step 4: Обновить тест на сообщение об ошибке**
+- [ ] **Step 4: Update error message in test**
 
-В `app2-fiat-settlement/backend/tests/api.test.js`, найти и обновить тест:
+In `app2-fiat-settlement/backend/tests/api.test.js`, find and update tests:
 
-Было:
+Before:
+
 ```js
 expect(res.body.error).toMatch(/positive number/i);
 ```
-Стало (для обоих тестов на amount):
+
+After (for both amount tests):
+
 ```js
 expect(res.body.error).toMatch(/positive integer/i);
 ```
 
-И добавить тест на дробное число:
+And add a test for fractional amounts:
+
 ```js
 test('returns 400 when amount is fractional', async () => {
   const res = await request(app)
@@ -1189,14 +1237,14 @@ test('returns 400 when amount is fractional', async () => {
 });
 ```
 
-- [ ] **Step 5: Запустить все тесты App 2**
+- [ ] **Step 5: Run all App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 6: Commit**
 
@@ -1207,38 +1255,39 @@ git commit -m "fix: store monetary amounts as INTEGER to avoid float precision e
 
 ---
 
-## Task 7: Security middleware — helmet, rate-limit, CORS (M-1, M-2, M-3)
+## Task 7: Security Middleware — helmet, rate-limit, CORS (M-1, M-2, M-3)
 
 **Files:**
+
 - Modify: `app1-crypto-treasury/backend/package.json`
 - Modify: `app2-fiat-settlement/backend/package.json`
 - Modify: `app1-crypto-treasury/backend/src/index.js`
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 
-- [ ] **Step 1: Установить пакеты в App 1**
+- [ ] **Step 1: Install packages in App 1**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend
 npm install helmet express-rate-limit cors
 ```
 
-- [ ] **Step 2: Установить пакеты в App 2**
+- [ ] **Step 2: Install packages in App 2**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm install helmet express-rate-limit cors
 ```
 
-- [ ] **Step 3: Добавить middleware в App 1 (index.js)**
+- [ ] **Step 3: Add middleware to App 1 (index.js)**
 
-В `app1-crypto-treasury/backend/src/index.js`, найти строки в начале файла:
+In `app1-crypto-treasury/backend/src/index.js`, find lines at the top:
 
 ```js
 const express = require('express');
 const nearAPI = require('near-api-js');
 ```
 
-Заменить на:
+Replace with:
 
 ```js
 const express = require('express');
@@ -1248,7 +1297,7 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 ```
 
-После строки `app.use(express.json());` добавить:
+After `app.use(express.json());` add:
 
 ```js
 app.use(helmet());
@@ -1256,16 +1305,16 @@ app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split('
 app.use('/api/', rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 ```
 
-- [ ] **Step 4: Добавить middleware в App 2 (index.js)**
+- [ ] **Step 4: Add middleware to App 2 (index.js)**
 
-В `app2-fiat-settlement/backend/src/index.js`, найти начало файла:
+In `app2-fiat-settlement/backend/src/index.js`, find top of file:
 
 ```js
 const express = require('express');
 const path = require('path');
 ```
 
-Заменить на:
+Replace with:
 
 ```js
 const express = require('express');
@@ -1275,7 +1324,7 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 ```
 
-После строки `app.use(express.json());` добавить:
+After `app.use(express.json());` add:
 
 ```js
 app.use(helmet());
@@ -1283,14 +1332,14 @@ app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split('
 app.use('/api/', rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 ```
 
-- [ ] **Step 5: Запустить тесты обоих приложений**
+- [ ] **Step 5: Run tests for both apps**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend && npm test
 cd E:\near_project\app2-fiat-settlement\backend && npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 6: Commit**
 
@@ -1301,16 +1350,18 @@ git commit -m "security: add helmet, rate-limiting, and CORS to both apps"
 
 ---
 
-## Task 8: Error handling при старте App 2 (M-7)
+## Task 8: Error Handling on App 2 Startup (M-7)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 
-- [ ] **Step 1: Обернуть initApp в try/catch при старте**
+- [ ] **Step 1: Wrap initApp in try/catch on startup**
 
-В `app2-fiat-settlement/backend/src/index.js`, найти блок в конце файла:
+In `app2-fiat-settlement/backend/src/index.js`, find block at end of file:
 
-Было:
+Before:
+
 ```js
 if (require.main === module) {
   validateConfig();
@@ -1324,7 +1375,8 @@ if (require.main === module) {
 }
 ```
 
-Стало:
+After:
+
 ```js
 if (require.main === module) {
   try {
@@ -1343,14 +1395,14 @@ if (require.main === module) {
 }
 ```
 
-- [ ] **Step 2: Запустить тесты App 2**
+- [ ] **Step 2: Run App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 3: Commit**
 
@@ -1361,21 +1413,22 @@ git commit -m "fix: crash on startup if DB initialization fails instead of runni
 
 ---
 
-## Task 9: minAmountOut обязателен для свапа (M-5)
+## Task 9: minAmountOut Required for Swap (M-5)
 
 **Files:**
+
 - Modify: `app1-crypto-treasury/backend/src/index.js`
 - Modify: `app1-crypto-treasury/backend/tests/api.test.js`
 
-- [ ] **Step 1: Обновить тест — убрать "default 0" тест, добавить "required" тест**
+- [ ] **Step 1: Update test — remove "default 0" test, add "required" test**
 
-В `app1-crypto-treasury/backend/tests/api.test.js`, найти тест:
+In `app1-crypto-treasury/backend/tests/api.test.js`, find test:
 
 ```js
 it('uses default minAmountOut of 0 if not provided', async () => {
 ```
 
-Заменить его на:
+Replace with:
 
 ```js
 it('returns 400 if minAmountOut is not provided', async () => {
@@ -1389,20 +1442,21 @@ it('returns 400 if minAmountOut is not provided', async () => {
 });
 ```
 
-- [ ] **Step 2: Запустить тест — убедиться что ПАДАЕТ**
+- [ ] **Step 2: Run test — confirm it FAILS**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend
 npm test -- --testPathPattern=api.test
 ```
 
-Ожидаемый результат: новый тест FAIL (сейчас возвращается 200 с default '0').
+Expected: new test FAIL (currently returns 200 with default '0').
 
-- [ ] **Step 3: Сделать minAmountOut обязательным**
+- [ ] **Step 3: Make minAmountOut required**
 
-В `app1-crypto-treasury/backend/src/index.js`, найти обработчик POST /api/swap:
+In `app1-crypto-treasury/backend/src/index.js`, find POST /api/swap handler:
 
-Было:
+Before:
+
 ```js
 const { amountNEAR, minAmountOut = '0' } = req.body;
 if (!amountNEAR) {
@@ -1410,7 +1464,8 @@ if (!amountNEAR) {
 }
 ```
 
-Стало:
+After:
+
 ```js
 const { amountNEAR, minAmountOut } = req.body;
 if (!amountNEAR || minAmountOut == null) {
@@ -1418,14 +1473,14 @@ if (!amountNEAR || minAmountOut == null) {
 }
 ```
 
-- [ ] **Step 4: Запустить тесты App 1**
+- [ ] **Step 4: Run App 1 tests**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -1436,16 +1491,17 @@ git commit -m "fix: require explicit minAmountOut for swap to prevent unexpected
 
 ---
 
-## Task 10: Пагинация на GET эндпоинтах (M-6)
+## Task 10: Pagination on GET Endpoints (M-6)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/db.js`
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 - Modify: `app2-fiat-settlement/backend/tests/api.test.js`
 
-- [ ] **Step 1: Добавить пагинированную функцию в db.js**
+- [ ] **Step 1: Add paginated function to db.js**
 
-В файле `app2-fiat-settlement/backend/src/db.js`, добавить после `getAllPayments`:
+In `app2-fiat-settlement/backend/src/db.js`, add after `getAllPayments`:
 
 ```js
 function getPaymentsPaginated(db, limit, offset) {
@@ -1455,11 +1511,11 @@ function getPaymentsPaginated(db, limit, offset) {
 }
 ```
 
-Добавить `getPaymentsPaginated` в `module.exports`.
+Add `getPaymentsPaginated` to `module.exports`.
 
-- [ ] **Step 2: Обновить GET /api/payments в index.js**
+- [ ] **Step 2: Update GET /api/payments in index.js**
 
-В `app2-fiat-settlement/backend/src/index.js`, обновить импорт db:
+In `app2-fiat-settlement/backend/src/index.js`, update db import:
 
 ```js
 const {
@@ -1470,16 +1526,18 @@ const {
 } = require('./db');
 ```
 
-Найти обработчик `GET /api/payments`:
+Find `GET /api/payments` handler:
 
-Было:
+Before:
+
 ```js
 app.get('/api/payments', (req, res) => {
   res.json(getAllPayments(db));
 });
 ```
 
-Стало:
+After:
+
 ```js
 app.get('/api/payments', (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 200);
@@ -1491,9 +1549,9 @@ app.get('/api/payments', (req, res) => {
 });
 ```
 
-- [ ] **Step 3: Добавить тест пагинации**
+- [ ] **Step 3: Add pagination test**
 
-В `app2-fiat-settlement/backend/tests/api.test.js`, добавить describe-блок:
+In `app2-fiat-settlement/backend/tests/api.test.js`, add describe block:
 
 ```js
 describe('GET /api/payments pagination', () => {
@@ -1528,14 +1586,14 @@ describe('GET /api/payments pagination', () => {
 });
 ```
 
-- [ ] **Step 4: Запустить тесты App 2**
+- [ ] **Step 4: Run App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -1546,43 +1604,37 @@ git commit -m "feat: add pagination to GET /api/payments endpoint"
 
 ---
 
-## Task 11: Health check эндпоинты (L-2)
+## Task 11: Health Check Endpoints (L-2)
 
 **Files:**
+
 - Modify: `app1-crypto-treasury/backend/src/index.js`
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 
-- [ ] **Step 1: Добавить GET /health в App 1**
+- [ ] **Step 1: Add GET /health to App 1**
 
-В `app1-crypto-treasury/backend/src/index.js`, добавить после `app.use(express.json());`:
-
-```js
-app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
-```
-
-- [ ] **Step 2: Добавить GET /health в App 2**
-
-В `app2-fiat-settlement/backend/src/index.js`, добавить сразу после строки `let db;`:
-
-```js
-// Health check — не требует auth и не зависит от db
-// (устанавливается раньше requireAuth)
-```
-
-Добавить роут ПЕРЕД requireAuth (чтобы health check не требовал ключа):
+In `app1-crypto-treasury/backend/src/index.js`, add after `app.use(express.json());`:
 
 ```js
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
 ```
 
-- [ ] **Step 3: Запустить тесты обоих приложений**
+- [ ] **Step 2: Add GET /health to App 2**
+
+In `app2-fiat-settlement/backend/src/index.js`, add route BEFORE requireAuth (so health check doesn't require a key):
+
+```js
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: Date.now() }));
+```
+
+- [ ] **Step 3: Run tests for both apps**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend && npm test
 cd E:\near_project\app2-fiat-settlement\backend && npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 4: Commit**
 
@@ -1593,23 +1645,24 @@ git commit -m "feat: add GET /health endpoint to both apps for monitoring"
 
 ---
 
-## Task 12: Node.js версия в package.json (L-3)
+## Task 12: Node.js Version in package.json (L-3)
 
 **Files:**
+
 - Modify: `app1-crypto-treasury/backend/package.json`
 - Modify: `app2-fiat-settlement/backend/package.json`
 
-- [ ] **Step 1: Добавить engines в App 1 package.json**
+- [ ] **Step 1: Add engines to App 1 package.json**
 
-В `app1-crypto-treasury/backend/package.json`, добавить поле `"engines"` после `"version"`:
+In `app1-crypto-treasury/backend/package.json`, add `"engines"` field after `"version"`:
 
 ```json
 "engines": { "node": ">=20.0.0" },
 ```
 
-- [ ] **Step 2: Добавить engines в App 2 package.json**
+- [ ] **Step 2: Add engines to App 2 package.json**
 
-В `app2-fiat-settlement/backend/package.json`, добавить поле `"engines"` после `"version"`:
+In `app2-fiat-settlement/backend/package.json`, add `"engines"` field after `"version"`:
 
 ```json
 "engines": { "node": ">=20.0.0" },
@@ -1624,16 +1677,17 @@ git commit -m "chore: pin minimum Node.js version to >=20.0.0 in package.json"
 
 ---
 
-## Task 13: Вынести testnet контракты в config (L-4)
+## Task 13: Move Testnet Contracts to Config (L-4)
 
 **Files:**
+
 - Modify: `app1-crypto-treasury/backend/src/config.js`
 - Modify: `app1-crypto-treasury/backend/src/wallet.js`
 - Modify: `app1-crypto-treasury/backend/src/swap.js`
 
-- [ ] **Step 1: Добавить константы в config.js**
+- [ ] **Step 1: Add constants to config.js**
 
-В `app1-crypto-treasury/backend/src/config.js`, добавить поля:
+In `app1-crypto-treasury/backend/src/config.js`, add fields:
 
 ```js
 const TESTNET_DEFAULTS = {
@@ -1651,7 +1705,7 @@ const MAINNET_DEFAULTS = {
 };
 ```
 
-Итоговый config.js:
+Final config.js:
 
 ```js
 require('dotenv').config();
@@ -1699,11 +1753,12 @@ function validateConfig() {
 module.exports = { config, validateConfig };
 ```
 
-- [ ] **Step 2: Обновить wallet.js — использовать config**
+- [ ] **Step 2: Update wallet.js — use config**
 
-В `app1-crypto-treasury/backend/src/wallet.js`:
+In `app1-crypto-treasury/backend/src/wallet.js`:
 
-Было:
+Before:
+
 ```js
 const USDC_CONTRACT = 'usdc.fakes.testnet';
 const USDC_DECIMALS = 6;
@@ -1711,7 +1766,7 @@ const USDC_DECIMALS = 6;
 async function loadAccount(config) {
 ```
 
-Стало (убрать константу, принимать из config):
+After (remove the constant, accept from config):
 
 ```js
 const nearAPI = require('near-api-js');
@@ -1755,24 +1810,28 @@ async function getUSDCBalance(account, usdcContract) {
 module.exports = { loadAccount, getNEARBalance, getUSDCBalance };
 ```
 
-- [ ] **Step 3: Обновить index.js — передать usdcContract в getUSDCBalance**
+- [ ] **Step 3: Update index.js — pass usdcContract to getUSDCBalance**
 
-В `app1-crypto-treasury/backend/src/index.js`, найти вызов getUSDCBalance:
+In `app1-crypto-treasury/backend/src/index.js`, find getUSDCBalance call:
 
-Было:
+Before:
+
 ```js
 getUSDCBalance(account),
 ```
-Стало:
+
+After:
+
 ```js
 getUSDCBalance(account, config.usdcContract),
 ```
 
-- [ ] **Step 4: Обновить swap.js — использовать config**
+- [ ] **Step 4: Update swap.js — use config**
 
-В `app1-crypto-treasury/backend/src/swap.js`:
+In `app1-crypto-treasury/backend/src/swap.js`:
 
-Было:
+Before:
+
 ```js
 const REF_FINANCE = 'ref-finance-101.testnet';
 const WNEAR = 'wrap.testnet';
@@ -1784,7 +1843,8 @@ async function wrapNEAR(account, amountYocto) {
     contractId: WNEAR,
 ```
 
-Стало:
+After:
+
 ```js
 async function wrapNEAR(account, amountYocto, wNear) {
   return account.functionCall({
@@ -1823,44 +1883,47 @@ async function swapNEARtoUSDC(account, amountYocto, minAmountOut, { refFinance, 
 module.exports = { wrapNEAR, swapNEARtoUSDC };
 ```
 
-- [ ] **Step 5: Обновить index.js — передать config в wrapNEAR и swapNEARtoUSDC**
+- [ ] **Step 5: Update index.js — pass config to wrapNEAR and swapNEARtoUSDC**
 
-В `app1-crypto-treasury/backend/src/index.js`, найти вызовы:
+In `app1-crypto-treasury/backend/src/index.js`, find calls:
 
-Было:
+Before:
+
 ```js
 await wrapNEAR(account, amountYocto);
 await swapNEARtoUSDC(account, amountYocto, minAmountOut);
 ```
-Стало:
+
+After:
+
 ```js
 await wrapNEAR(account, amountYocto, config.wNear);
 await swapNEARtoUSDC(account, amountYocto, minAmountOut, config);
 ```
 
-- [ ] **Step 6: Обновить тест — wallet.test.js и swap.test.js**
+- [ ] **Step 6: Update tests — wallet.test.js and swap.test.js**
 
-В `app1-crypto-treasury/backend/tests/api.test.js`, мок `near-api-js` используется для `parseNearAmount`, а wallet/swap мокированы полностью. Тесты не сломаются.
+In `app1-crypto-treasury/backend/tests/api.test.js`, the `near-api-js` mock is used for `parseNearAmount`, and wallet/swap are fully mocked. Tests won't break.
 
-Но нужно проверить `wallet.test.js` и `swap.test.js` — они могут использовать старые сигнатуры.
+But check `wallet.test.js` and `swap.test.js` — they may use old signatures:
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend
 npm test 2>&1 | head -50
 ```
 
-Если тесты падают из-за изменения сигнатуры `getUSDCBalance` или `swapNEARtoUSDC`, обновить соответствующие тесты чтобы передавать `usdcContract` / config-объект. Пример для wallet.test.js:
+If tests fail due to changed signature of `getUSDCBalance` or `swapNEARtoUSDC`, update the corresponding tests to pass `usdcContract` / config object. Example for wallet.test.js:
 
-Найти вызовы `getUSDCBalance(account)` и заменить на `getUSDCBalance(account, 'usdc.fakes.testnet')`.
+Find calls `getUSDCBalance(account)` and replace with `getUSDCBalance(account, 'usdc.fakes.testnet')`.
 
-- [ ] **Step 7: Запустить все тесты App 1**
+- [ ] **Step 7: Run all App 1 tests**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 8: Commit**
 
@@ -1871,21 +1934,25 @@ git commit -m "refactor: move hardcoded testnet contract addresses to config for
 
 ---
 
-## Task 14: Валидация длины строк (L-5)
+## Task 14: String Length Validation (L-5)
 
 **Files:**
+
 - Modify: `app2-fiat-settlement/backend/src/index.js`
 
-- [ ] **Step 1: Добавить валидацию в POST /api/schools**
+- [ ] **Step 1: Add validation to POST /api/schools**
 
-В `app2-fiat-settlement/backend/src/index.js`, в обработчике `app.post('/api/schools', ...)`:
+In `app2-fiat-settlement/backend/src/index.js`, in the `app.post('/api/schools', ...)` handler:
 
-Было:
+Before:
+
 ```js
 const { name, bank_details, currency } = req.body;
 if (!name) return res.status(400).json({ error: 'name is required' });
 ```
-Стало:
+
+After:
+
 ```js
 const { name, bank_details, currency } = req.body;
 if (!name) return res.status(400).json({ error: 'name is required' });
@@ -1897,9 +1964,9 @@ if (bank_details && typeof bank_details === 'string' && bank_details.length > 50
 }
 ```
 
-- [ ] **Step 2: Добавить валидацию в POST /api/payments**
+- [ ] **Step 2: Add validation to POST /api/payments**
 
-Найти обработчик `app.post('/api/payments', ...)`, после проверки amount добавить:
+Find `app.post('/api/payments', ...)` handler, after the amount check add:
 
 ```js
 if (notes && typeof notes === 'string' && notes.length > 500) {
@@ -1907,14 +1974,14 @@ if (notes && typeof notes === 'string' && notes.length > 500) {
 }
 ```
 
-- [ ] **Step 3: Запустить тесты App 2**
+- [ ] **Step 3: Run App 2 tests**
 
 ```bash
 cd E:\near_project\app2-fiat-settlement\backend
 npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
 - [ ] **Step 4: Commit**
 
@@ -1925,18 +1992,18 @@ git commit -m "feat: add string length validation for school name, bank_details,
 
 ---
 
-## Финальная проверка
+## Final Verification
 
-- [ ] **Запустить все тесты обоих приложений**
+- [ ] **Run all tests for both apps**
 
 ```bash
 cd E:\near_project\app1-crypto-treasury\backend && npm test
 cd E:\near_project\app2-fiat-settlement\backend && npm test
 ```
 
-Ожидаемый результат: все тесты PASS.
+Expected: all tests PASS.
 
-- [ ] **Проверить git status**
+- [ ] **Check git status**
 
 ```bash
 cd E:\near_project
@@ -1944,10 +2011,10 @@ git status
 git log --oneline -15
 ```
 
-- [ ] **Ротировать приватный ключ (C-1 — финальный шаг)**
+- [ ] **Rotate private key (C-1 — final step)**
 
 ```bash
 near generate-key farab.testnet --networkId testnet
 ```
 
-Скопировать `private_key` из `~/.near-credentials/testnet/farab.testnet.json` в `.env`.
+Copy `private_key` from `~/.near-credentials/testnet/farab.testnet.json` to `.env`.

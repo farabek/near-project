@@ -1,27 +1,28 @@
-# App 2: Fiat Settlement — Дизайн-документ
+# App 2: Fiat Settlement — Design Document
 
-**Дата:** 2026-05-11
-**Проект:** NEAR Sovereign AI Blueprint — Edu-Arbitrage Model
-**Статус:** Одобрен
-
----
-
-## Контекст
-
-Система состоит из двух приложений:
-
-- **App 1 (готов):** Crypto Treasury — управление средствами в NEAR/USDC, задеплоен на `farab.testnet`
-- **App 2 (этот документ):** Fiat Settlement — выплаты школам в фиате, управление школами и расписаниями
-
-Ключевые принципы:
-- Школы не знают о крипте — получают обычный банковский перевод
-- Только один пользователь — владелец системы
-- Платёжный провайдер — заглушка (mock), реальная интеграция добавляется позже
-- Поддержка двух режимов бизнес-модели: с привязкой к App 1 (режим А) и без неё (режим Б)
+**Date:** 2026-05-11
+**Project:** NEAR Sovereign AI Blueprint — Edu-Arbitrage Model
+**Status:** Approved
 
 ---
 
-## Архитектура
+## Context
+
+The system consists of two apps:
+
+- **App 1 (complete):** Crypto Treasury — manages funds in NEAR/USDC, deployed to `farab.testnet`
+- **App 2 (this document):** Fiat Settlement — pays schools in fiat, manages schools and schedules
+
+Key principles:
+
+- Schools do not know about crypto — they receive a regular bank transfer
+- Single user — the system owner
+- Payment provider is a mock stub; real integration is added later
+- Supports two business model modes: linked to App 1 (Mode A) and standalone (Mode B)
+
+---
+
+## Architecture
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
@@ -29,7 +30,7 @@
 │                                                              │
 │  ┌────────────────────┐      ┌───────────────────────────┐   │
 │  │   Express Backend  │      │   SQLite Database         │   │
-│  │   (порт 3001)      │─────▶│                           │   │
+│  │   (port 3001)      │─────▶│                           │   │
 │  │                    │      │  schools       payments   │   │
 │  │  /api/schools      │      │  schedules                │   │
 │  │  /api/payments     │      └───────────────────────────┘   │
@@ -38,7 +39,7 @@
 │           │                                                   │
 │  ┌────────▼───────────┐      ┌───────────────────────────┐   │
 │  │   Static Frontend  │      │   Mock Payment Module     │   │
-│  │   (HTML/CSS/JS)    │      │   (заглушка, всегда OK)   │   │
+│  │   (HTML/CSS/JS)    │      │   (stub, always OK)       │   │
 │  └────────────────────┘      └───────────────────────────┘   │
 │                                                              │
 └──────────────────────┬───────────────────────────────────────┘
@@ -47,41 +48,42 @@
                        ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                    App 1: Crypto Treasury                     │
-│                    (порт 3000, farab.testnet)                 │
+│                    (port 3000, farab.testnet)                 │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Подход
+## Approach
 
-**JS-first, без фреймворков:** Node.js/Express бэкенд + статический HTML/vanilla JS фронтенд + SQLite.
+**JS-first, no frameworks:** Node.js/Express backend + static HTML/vanilla JS frontend + SQLite.
 
-Выбран потому что:
-- Единый стиль с App 1 — один Node.js процесс, никакого шага сборки
-- SQLite не требует отдельного сервера базы данных
-- Для единственного владельца React — избыточен
+Chosen because:
 
----
-
-## Компоненты
-
-| Файл | Что делает |
-|------|------------|
-| `backend/src/index.js` | Express сервер, все маршруты |
-| `backend/src/db.js` | SQLite: создание таблиц, CRUD операции |
-| `backend/src/payment.js` | Mock провайдер + вызов App 1 `/api/release` |
-| `backend/src/scheduler.js` | Запуск запланированных выплат по cron |
-| `backend/public/index.html` | Главный дашборд |
-| `backend/public/schools.html` | Управление школами |
-| `backend/public/payments.html` | Создание и история выплат |
-| `backend/public/schedules.html` | Управление расписаниями |
+- Consistent style with App 1 — single Node.js process, no build step
+- SQLite requires no separate database server
+- React is overkill for a single-owner system
 
 ---
 
-## Модель данных (SQLite)
+## Components
 
-### Таблица `schools`
+| File | Description |
+|------|-------------|
+| `backend/src/index.js` | Express server, all routes |
+| `backend/src/db.js` | SQLite: table creation, CRUD operations |
+| `backend/src/payment.js` | Mock provider + App 1 `/api/release` call |
+| `backend/src/scheduler.js` | Runs scheduled payments via cron |
+| `backend/public/index.html` | Main dashboard |
+| `backend/public/schools.html` | School management |
+| `backend/public/payments.html` | Payment creation and history |
+| `backend/public/schedules.html` | Schedule management |
+
+---
+
+## Data Model (SQLite)
+
+### Table `schools`
 
 ```sql
 CREATE TABLE schools (
@@ -93,7 +95,7 @@ CREATE TABLE schools (
 );
 ```
 
-### Таблица `payments`
+### Table `payments`
 
 ```sql
 CREATE TABLE payments (
@@ -110,13 +112,13 @@ CREATE TABLE payments (
 );
 ```
 
-Статусы: `pending` → `sent`
+Statuses: `pending` → `sent`
 
-Поле `app1_payment_id` — необязательное. Если NULL — выплата проходит без вызова App 1 (режим Б бизнес-модели).
+The `app1_payment_id` field is optional. If NULL — the payment proceeds without calling App 1 (Mode B).
 
-Поле `app1_released` — флаг: был ли успешно вызван `/api/release` на App 1. Если выплата прошла, но App 1 недоступен — флаг остаётся `0` и владелец видит предупреждение.
+The `app1_released` field is a flag: whether `/api/release` was successfully called on App 1. If the payment went through but App 1 was unavailable — the flag stays `0` and the owner sees a warning.
 
-### Таблица `schedules`
+### Table `schedules`
 
 ```sql
 CREATE TABLE schedules (
@@ -130,98 +132,99 @@ CREATE TABLE schedules (
 );
 ```
 
-`cron_expr` примеры:
-- `0 9 1 * *` — 1-го числа каждого месяца в 9:00
-- `0 10 * * 1` — каждый понедельник в 10:00
+`cron_expr` examples:
 
-Поддержка любой валюты через ISO-код (USD, RUB, EUR, GBP, UZS и др.) — во всех трёх таблицах.
+- `0 9 1 * *` — 1st of every month at 9:00
+- `0 10 * * 1` — every Monday at 10:00
+
+Any currency supported via ISO code (USD, RUB, EUR, GBP, UZS, etc.) — in all three tables.
 
 ---
 
 ## REST API
 
-### Школы
+### Schools
 
-| Метод | Эндпоинт | Что делает |
-|-------|----------|------------|
-| `GET` | `/api/schools` | Список всех школ |
-| `POST` | `/api/schools` | Добавить школу |
-| `PUT` | `/api/schools/:id` | Обновить реквизиты |
-| `DELETE` | `/api/schools/:id` | Удалить школу |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/schools` | List all schools |
+| `POST` | `/api/schools` | Add a school |
+| `PUT` | `/api/schools/:id` | Update details |
+| `DELETE` | `/api/schools/:id` | Delete a school |
 
-### Выплаты
+### Payments
 
-| Метод | Эндпоинт | Что делает |
-|-------|----------|------------|
-| `GET` | `/api/payments` | История всех выплат |
-| `POST` | `/api/payments` | Создать выплату (статус `pending`) |
-| `POST` | `/api/payments/:id/confirm` | Подтвердить и отправить: mock → статус `sent` → App 1 release |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/payments` | Payment history |
+| `POST` | `/api/payments` | Create payment (status `pending`) |
+| `POST` | `/api/payments/:id/confirm` | Confirm and send: mock → status `sent` → App 1 release |
 
-### Расписания
+### Schedules
 
-| Метод | Эндпоинт | Что делает |
-|-------|----------|------------|
-| `GET` | `/api/schedules` | Список расписаний |
-| `POST` | `/api/schedules` | Создать расписание |
-| `PATCH` | `/api/schedules/:id` | Пауза / активировать |
-| `DELETE` | `/api/schedules/:id` | Удалить расписание |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/schedules` | List schedules |
+| `POST` | `/api/schedules` | Create a schedule |
+| `PATCH` | `/api/schedules/:id` | Pause / activate |
+| `DELETE` | `/api/schedules/:id` | Delete schedule |
 
 ---
 
-## Поток выплаты
+## Payment Flow
 
 ```text
-1. СОЗДАНИЕ
-   Владелец → POST /api/payments { school_id, amount, currency, app1_payment_id? }
-   → Запись в БД, статус: pending
+1. CREATE
+   Owner → POST /api/payments { school_id, amount, currency, app1_payment_id? }
+   → Record in DB, status: pending
 
-2. ПРОСМОТР
-   Владелец проверяет детали (школа, сумма, реквизиты) перед подтверждением
+2. REVIEW
+   Owner checks details (school, amount, bank details) before confirming
 
-3. ПОДТВЕРЖДЕНИЕ
-   Владелец → POST /api/payments/:id/confirm
-   → Mock провайдер: "отправлено" (всегда OK)
-   → Статус: sent, sent_at: now()
-   → Если app1_payment_id указан: POST http://localhost:3000/api/release
-     { paymentId } с заголовком x-api-key
-   → app1_released: 1 (если OK) или 0 + предупреждение (если App 1 недоступен)
+3. CONFIRM
+   Owner → POST /api/payments/:id/confirm
+   → Mock provider: "sent" (always OK)
+   → Status: sent, sent_at: now()
+   → If app1_payment_id is set: POST http://localhost:3000/api/release
+     { paymentId } with x-api-key header
+   → app1_released: 1 (if OK) or 0 + warning (if App 1 unavailable)
 
-4. РАСПИСАНИЕ (опционально)
-   scheduler.js каждую минуту проверяет cron_expr активных расписаний
-   → При совпадении автоматически создаёт выплату и сразу вызывает confirm
-   → app1_payment_id не указывается (режим Б — выплата из фиата без привязки к крипте)
-   → Владелец видит запись в истории выплат
+4. SCHEDULE (optional)
+   scheduler.js checks active schedule cron_expr every minute
+   → On match, automatically creates a payment and calls confirm
+   → app1_payment_id not set (Mode B — fiat payment without crypto link)
+   → Owner sees the record in payment history
 ```
 
 ---
 
-## Обработка ошибок
+## Error Handling
 
-| Ситуация | Что происходит |
-|----------|----------------|
-| Mock провайдер возвращает ошибку | Статус остаётся `pending`, ошибка в ответе API |
-| App 1 недоступен при release | `sent` записывается, `app1_released: 0`, предупреждение в ответе |
-| `app1_payment_id` не указан | Выплата проходит без вызова App 1 — режим Б |
-| Двойное подтверждение (`sent` → confirm ещё раз) | 400 Bad Request: "Payment already sent" |
-| Удаление школы с выплатами | 400 Bad Request: "School has existing payments" |
+| Situation | What happens |
+|-----------|-------------|
+| Mock provider returns error | Status stays `pending`, error in API response |
+| App 1 unavailable on release | `sent` is recorded, `app1_released: 0`, warning in response |
+| `app1_payment_id` not set | Payment proceeds without calling App 1 — Mode B |
+| Double confirmation (`sent` → confirm again) | 400 Bad Request: "Payment already sent" |
+| Deleting school with payments | 400 Bad Request: "School has existing payments" |
 
 ---
 
-## Структура проекта
+## Project Structure
 
 ```text
 app2-fiat-settlement/
 ├── backend/
 │   ├── src/
-│   │   ├── index.js        # Express сервер, маршруты
-│   │   ├── db.js           # SQLite: таблицы и CRUD
-│   │   ├── payment.js      # Mock провайдер + App 1 release
-│   │   └── scheduler.js    # Cron расписания
+│   │   ├── index.js        # Express server, routes
+│   │   ├── db.js           # SQLite: tables and CRUD
+│   │   ├── payment.js      # Mock provider + App 1 release
+│   │   └── scheduler.js    # Cron schedules
 │   ├── public/
-│   │   ├── index.html      # Дашборд
-│   │   ├── schools.html    # Управление школами
-│   │   ├── payments.html   # Выплаты
-│   │   └── schedules.html  # Расписания
+│   │   ├── index.html      # Dashboard
+│   │   ├── schools.html    # School management
+│   │   ├── payments.html   # Payments
+│   │   └── schedules.html  # Schedules
 │   ├── tests/
 │   │   ├── db.test.js
 │   │   ├── payment.test.js
@@ -234,35 +237,36 @@ app2-fiat-settlement/
 
 ---
 
-## Переменные окружения
+## Environment Variables
 
 ```bash
 PORT=3001
 APP1_URL=http://localhost:3000
-APP1_RELEASE_API_KEY=<тот же ключ что в App 1>
+APP1_RELEASE_API_KEY=<same key as in App 1>
 DB_PATH=./data/app2.db
 ```
 
 ---
 
-## Тестирование
+## Testing
 
-Jest + supertest, аналогично App 1:
+Jest + supertest, same as App 1:
 
-| Файл | Что тестирует | Кол-во тестов |
-|------|---------------|---------------|
-| `db.test.js` | CRUD школ, платежей, расписаний | ~6 |
-| `payment.test.js` | Mock провайдер, вызов App 1, обработка ошибок | ~5 |
-| `scheduler.test.js` | Логика запуска по cron, пауза/активация | ~4 |
-| `api.test.js` | Все REST эндпоинты (supertest) | ~8 |
+| File | Tests | Count |
+|------|-------|-------|
+| `db.test.js` | CRUD for schools, payments, schedules | ~6 |
+| `payment.test.js` | Mock provider, App 1 call, error handling | ~5 |
+| `scheduler.test.js` | Cron trigger logic, pause/activate | ~4 |
+| `api.test.js` | All REST endpoints (supertest) | ~8 |
 
-Цель: ~23 теста.
+Target: ~23 tests.
 
 ---
 
-## Что дальше
+## Next Steps
 
-После реализации App 2:
-- Заменить mock провайдер на реального (Wise API или ЮKassa)
-- Добавить `.gitignore`, закоммитить в GitHub
-- Опционально: задеплоить App 1 + App 2 на сервер (Railway, Render)
+After App 2 is implemented:
+
+- Replace mock provider with a real one (Wise API or similar)
+- Add `.gitignore`, commit to GitHub
+- Optionally: deploy App 1 + App 2 to a server (Railway, Render)
